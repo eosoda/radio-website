@@ -82,7 +82,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
         
-        {/* Favicon via Emoji (Leve e Moderno) */}
+        {/* Favicon via Emoji */}
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>" />
         
         {/* PWA e Meta Tags Mobile */}
@@ -92,7 +92,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Rádio Vida" />
-        <link rel="apple-touch-icon" href="https://placehold.co/192x192/197253/00C7A9?text=RV" />
+        <link rel="apple-touch-icon" href="https://picsum.photos/seed/radio-vida-192/192/192" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col pb-24">
         <FirebaseClientProvider>

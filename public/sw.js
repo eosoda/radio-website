@@ -1,4 +1,3 @@
-
 const CACHE_NAME = 'radio-vida-v1';
 const ASSETS_TO_CACHE = [
   '/',
@@ -18,11 +17,8 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
+        cacheNames.filter((cacheName) => cacheName !== CACHE_NAME)
+          .map((cacheName) => caches.delete(cacheName))
       );
     })
   );
@@ -30,15 +26,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Não intercepta requisições de stream de áudio ou externas complexas para evitar erros de CORS/Network
-  if (event.request.url.includes('stream') || event.request.url.includes('placehold.co')) {
+  // Não cachear chamadas de API ou Stream
+  if (event.request.url.includes('/api/') || event.request.url.includes('stream')) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request).catch(() => {
-        // Fallback silencioso para falhas de rede
+      if (response) {
+        return response;
+      }
+      return fetch(event.request).catch(() => {
+        // Fallback silencioso para falhas de rede (ex: ícones bloqueados)
         return null;
       });
     })
