@@ -12,9 +12,6 @@ import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import NowPlaying from './NowPlaying';
 
-/**
- * AudioVisualizer - Componente de barras animadas
- */
 const Visualizer = ({ isPlaying }: { isPlaying: boolean }) => {
   return (
     <div className="flex items-end gap-1 h-8 px-2">
@@ -64,12 +61,10 @@ export default function AudioPlayer() {
   const defaultVolume = config?.defaultVolume !== undefined ? config.defaultVolume : 0.6;
   const autoplayEnabled = config?.autoplay !== false;
 
-  // Sincronização inicial com configurações do Admin
   useEffect(() => {
     if (isMounted && _hasHydrated && config && !configApplied.current) {
       const savedSettings = localStorage.getItem('radio-vida-audio-settings');
       
-      // Se não houver configurações salvas, aplica as do admin
       if (!savedSettings) {
         setVolume(defaultVolume);
         setIsPlaying(autoplayEnabled);
@@ -79,7 +74,6 @@ export default function AudioPlayer() {
     }
   }, [isMounted, _hasHydrated, config, defaultVolume, autoplayEnabled, setVolume, setIsPlaying]);
 
-  // Lógica principal de reprodução
   useEffect(() => {
     if (audioRef.current && isMounted && _hasHydrated) {
       audioRef.current.volume = isMuted ? 0 : volume;
@@ -93,7 +87,7 @@ export default function AudioPlayer() {
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           playPromise.catch(() => {
-            console.log("Autoplay bloqueado pelo navegador. Aguardando interação...");
+            console.log("Autoplay bloqueado pelo navegador. Aguardando interação do usuário.");
           });
         }
       } else {
@@ -102,7 +96,6 @@ export default function AudioPlayer() {
     }
   }, [isPlaying, volume, isMuted, streamUrl, isMounted, _hasHydrated]);
 
-  // Lógica de Desbloqueio de Áudio em Mobile (User Gesture Unlock)
   useEffect(() => {
     if (!isMounted || !isPlaying) return;
 
@@ -110,12 +103,10 @@ export default function AudioPlayer() {
       if (audioRef.current && audioRef.current.paused && isPlaying) {
         audioRef.current.play()
           .then(() => {
-            console.log("Áudio desbloqueado com sucesso via interação.");
+            console.log("Áudio desbloqueado com sucesso.");
             cleanup();
           })
-          .catch(() => {
-            // Se ainda falhar, tentaremos na próxima interação
-          });
+          .catch(() => {});
       }
     };
 
@@ -142,7 +133,6 @@ export default function AudioPlayer() {
       />
       
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
-        {/* Lado Esquerdo: Info */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={cn(
             "h-12 w-12 rounded-full flex items-center justify-center bg-primary shrink-0 transition-all duration-500",
@@ -167,9 +157,7 @@ export default function AudioPlayer() {
           </div>
         </div>
 
-        {/* Centro: Play e Volume Mobile */}
         <div className="flex items-center gap-2 md:gap-6">
-          {/* Volume Mobile (Popover) */}
           <div className="md:hidden">
             <Popover>
               <PopoverTrigger asChild>
@@ -178,11 +166,7 @@ export default function AudioPlayer() {
                   size="icon" 
                   className="h-10 w-10 text-secondary hover:bg-secondary/10"
                 >
-                  {isMuted || volume === 0 ? (
-                    <VolumeX className="h-6 w-6" />
-                  ) : (
-                    <Volume2 className="h-6 w-6" />
-                  )}
+                  {isMuted || volume === 0 ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
                 </Button>
               </PopoverTrigger>
               <PopoverContent side="top" align="center" className="w-64 p-4 bg-background/95 backdrop-blur-xl border-white/10 shadow-2xl">
@@ -228,7 +212,6 @@ export default function AudioPlayer() {
           </Button>
         </div>
 
-        {/* Lado Direito: Volume Desktop */}
         <div className="hidden md:flex items-center gap-3 flex-1 justify-end max-w-[240px]">
           <Button 
             variant="ghost" 

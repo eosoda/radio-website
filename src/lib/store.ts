@@ -25,8 +25,8 @@ interface AudioState {
 export const useAudioStore = create<AudioState>()(
   persist(
     (set) => ({
-      isPlaying: true,
-      volume: 0.6, // Alterado de 0.8 para 0.6
+      isPlaying: true, // Reprodução ativa por padrão
+      volume: 0.6,
       isMuted: false,
       streamUrl: 'https://URL:PORT/stream/',
       nowPlaying: 'Sintonizando Rádio Vida...',
