@@ -43,7 +43,6 @@ export default function RootLayout({
   useEffect(() => {
     setMounted(true);
     
-    // Registro do Service Worker para PWA
     if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(err => {
@@ -82,6 +81,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=PT+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+        
+        {/* Favicon via Emoji (Leve e Moderno) */}
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎙️</text></svg>" />
         
         {/* PWA e Meta Tags Mobile */}
         <link rel="manifest" href="/manifest.json" />
