@@ -61,6 +61,7 @@ export default function AudioPlayer() {
   const defaultVolume = config?.defaultVolume !== undefined ? config.defaultVolume : 0.6;
   const autoplayEnabled = config?.autoplay !== false;
 
+  // Sincronização inicial de configurações
   useEffect(() => {
     if (isMounted && _hasHydrated && config && !configApplied.current) {
       const savedSettings = localStorage.getItem('radio-vida-audio-settings');
@@ -74,6 +75,7 @@ export default function AudioPlayer() {
     }
   }, [isMounted, _hasHydrated, config, defaultVolume, autoplayEnabled, setVolume, setIsPlaying]);
 
+  // Gerenciamento do elemento de áudio
   useEffect(() => {
     if (audioRef.current && isMounted && _hasHydrated) {
       audioRef.current.volume = isMuted ? 0 : volume;
@@ -96,6 +98,7 @@ export default function AudioPlayer() {
     }
   }, [isPlaying, volume, isMuted, streamUrl, isMounted, _hasHydrated]);
 
+  // Listener de interação global para desbloquear o áudio
   useEffect(() => {
     if (!isMounted || !isPlaying) return;
 
@@ -103,7 +106,7 @@ export default function AudioPlayer() {
       if (audioRef.current && audioRef.current.paused && isPlaying) {
         audioRef.current.play()
           .then(() => {
-            console.log("Áudio desbloqueado com sucesso.");
+            console.log("Áudio desbloqueado com sucesso por interação.");
             cleanup();
           })
           .catch(() => {});
@@ -113,10 +116,12 @@ export default function AudioPlayer() {
     const cleanup = () => {
       window.removeEventListener('click', handleUserInteraction);
       window.removeEventListener('touchstart', handleUserInteraction);
+      window.removeEventListener('keydown', handleUserInteraction);
     };
 
     window.addEventListener('click', handleUserInteraction);
     window.addEventListener('touchstart', handleUserInteraction);
+    window.addEventListener('keydown', handleUserInteraction);
 
     return cleanup;
   }, [isPlaying, isMounted]);
@@ -206,7 +211,10 @@ export default function AudioPlayer() {
             variant="ghost" 
             size="icon" 
             onClick={() => setIsPlaying(!isPlaying)}
-            className="h-14 w-14 md:h-16 md:w-16 rounded-full bg-secondary hover:bg-secondary/90 text-primary-foreground shadow-xl hover:scale-105 transition-transform"
+            className={cn(
+              "h-14 w-14 md:h-16 md:w-16 rounded-full bg-secondary hover:bg-secondary/90 text-primary-foreground shadow-xl transition-all duration-300",
+              isPlaying ? "hover:scale-105" : "animate-bounce scale-110 shadow-secondary/50"
+            )}
           >
             {isPlaying ? <Pause className="h-8 w-8 md:h-10 md:w-10 fill-current" /> : <Play className="h-8 w-8 md:h-10 md:w-10 fill-current ml-1" />}
           </Button>
