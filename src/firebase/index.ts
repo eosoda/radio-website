@@ -1,34 +1,35 @@
+
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore';
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
   if (!getApps().length) {
-    // Important! initializeApp() is called without any arguments because Firebase App Hosting
-    // integrates with the initializeApp() function to provide the environment variables needed to
-    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
-    // without arguments.
     let firebaseApp;
+    
+    // Verifica se temos as chaves mínimas no config antes de tentar inicializar
+    const hasConfig = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
+
     try {
-      // Attempt to initialize via Firebase App Hosting environment variables
+      // Tenta inicialização automática do Firebase App Hosting primeiro
       firebaseApp = initializeApp();
     } catch (e) {
-      // Only warn in production because it's normal to use the firebaseConfig to initialize
-      // during development
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
+      if (hasConfig) {
+        // Se falhar e tivermos config manual (env), usamos ela
+        firebaseApp = initializeApp(firebaseConfig);
+      } else {
+        // Se não tivermos nada, lançamos o erro explicativo
+        console.error('Firebase: Variáveis de ambiente ausentes e inicialização automática falhou.');
+        throw e;
       }
-      firebaseApp = initializeApp(firebaseConfig);
     }
 
     return getSdks(firebaseApp);
   }
 
-  // If already initialized, return the SDKs with the already initialized App
   return getSdks(getApp());
 }
 

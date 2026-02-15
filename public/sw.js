@@ -11,17 +11,36 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network First para o stream e metadados, Cache First para o resto
-  if (event.request.url.includes('/api/') || event.request.url.includes('stream')) {
-    return; // Não cachear chamadas de API ou Stream
+  // Não intercepta requisições de stream de áudio ou externas complexas para evitar erros de CORS/Network
+  if (event.request.url.includes('stream') || event.request.url.includes('placehold.co')) {
+    return;
   }
 
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request).catch(() => {
+        // Fallback silencioso para falhas de rede
+        return null;
+      });
     })
   );
 });
