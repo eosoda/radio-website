@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Modo Claro - Refinado para conforto visual e legibilidade */
+    --background: 210 20% 98%;
+    --foreground: 197 45% 10%;
+    --card: 210 20% 96%;
+    --card-foreground: 197 45% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 197 45% 10%;
+    --primary: 197 37% 24%; /* Teal Profundo #264653 */
+    --primary-foreground: 210 20% 98%;
+    --secondary: 171 100% 28%; /* Tiffany Escurecido para Contraste no Light Mode */
+    --secondary-foreground: 210 20% 98%;
+    --muted: 210 10% 90%;
+    --muted-foreground: 197 20% 40%;
+    --accent: 171 100% 28%;
+    --accent-foreground: 210 20% 98%;
+    --border: 210 15% 88%;
+    --input: 210 15% 88%;
+    --ring: 171 100% 39%;
+    --radius: 0.75rem;
+    --chart-1: 197 37% 24%;
+    --chart-2: 171 100% 39%;
+  }
+
+  .dark {
+    --background: 197 45% 8%;
+    --foreground: 197 10% 98%;
+    --card: 197 45% 12%;
+    --card-foreground: 197 10% 98%;
+    --popover: 197 45% 10%;
+    --popover-foreground: 197 10% 98%;
+    --primary: 197 37% 24%;
+    --primary-foreground: 197 10% 98%;
+    --secondary: 171 100% 39%; /* Tiffany Original #00C7A9 */
+    --secondary-foreground: 197 37% 10%;
+    --muted: 197 30% 20%;
+    --muted-foreground: 197 20% 70%;
+    --accent: 171 100% 39%;
+    --accent-foreground: 197 37% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 197 30% 20%;
+    --input: 197 30% 20%;
+    --ring: 171 100% 39%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    /* Suporte para Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--secondary) / 0.3) transparent;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased selection:bg-accent selection:text-accent-foreground transition-colors duration-300;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+
+  /* Custom Scrollbar para Chrome, Safari e Edge */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--secondary) / 0.3);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--secondary) / 0.6);
+  }
+}
+
+.teal-glass {
+  background: rgba(38, 70, 83, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light .teal-glass {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(38, 70, 83, 0.08);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Animações Customizadas */
+@keyframes bar-grow {
+  0%, 100% { height: 4px; }
+  50% { height: 24px; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.visualizer-bar {
+  animation: bar-grow 1s ease-in-out infinite;
+}
+
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 15s linear infinite;
+}

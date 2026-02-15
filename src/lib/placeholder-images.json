@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "radio-studio",
+      "description": "Professional radio studio setup",
+      "imageUrl": "https://images.unsplash.com/photo-1556761175-129418cb2dfe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxyYWRpbyUyMHN0dWRpb3xlbnwwfHx8fDE3NzA5NDA3NjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "radio studio"
+    },
+    {
+      "id": "gospel-worship",
+      "description": "Worship background for gospel radio",
+      "imageUrl": "https://images.unsplash.com/photo-1715960350325-fbfaed379d8e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3b3JzaGlwJTIwZ29zcGVsfGVufDB8fHx8MTc3MDk0MDc2M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "worship gospel"
+    }
+  ]
+}

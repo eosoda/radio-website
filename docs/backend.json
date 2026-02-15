@@ -1,0 +1,327 @@
+
+{
+  "entities": {
+    "Config": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Config",
+      "type": "object",
+      "description": "Stores global configuration settings for the Rádio Vida application, controlling content, appearance, and core functionality.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Config entity."
+        },
+        "appName": {
+          "type": "string",
+          "description": "The name of the radio station application."
+        },
+        "slogan": {
+          "type": "string",
+          "description": "The tagline or slogan for the radio station."
+        },
+        "maintenanceMode": {
+          "type": "boolean",
+          "description": "Ativa o modo de manutenção, ocultando o site para visitantes e mostrando uma mensagem de 'Voltamos logo'."
+        },
+        "showNoticeBar": {
+          "type": "boolean",
+          "description": "Ativa a barra de avisos no topo do site."
+        },
+        "noticeBarFixed": {
+          "type": "boolean",
+          "description": "Define se a barra de avisos deve ficar fixa no topo durante a rolagem."
+        },
+        "noticeBarText": {
+          "type": "string",
+          "description": "O texto a ser exibido na barra de avisos."
+        },
+        "noticeBarIcon": {
+          "type": "string",
+          "description": "O ícone da Lucide a ser exibido na barra de avisos."
+        },
+        "noticeBarExpiresAt": {
+          "type": "string",
+          "description": "Data e hora (ISO) em que o aviso deve parar de ser exibido."
+        },
+        "noticeBarLinkText": {
+          "type": "string",
+          "description": "Texto do link opcional na barra de avisos."
+        },
+        "noticeBarLinkUrl": {
+          "type": "string",
+          "description": "URL do link opcional na barra de avisos."
+        },
+        "heroBackgroundImageUrl": {
+          "type": "string",
+          "description": "The URL for the hero section background image.",
+          "format": "uri"
+        },
+        "showHeroBackground": {
+          "type": "boolean",
+          "description": "Define se a imagem de fundo da seção Hero deve ser exibida."
+        },
+        "heroBadge1Text": {
+          "type": "string",
+          "description": "Text for the first badge under the main title."
+        },
+        "heroBadge1Icon": {
+          "type": "string",
+          "description": "Lucide icon name for the first badge."
+        },
+        "heroBadge2Text": {
+          "type": "string",
+          "description": "Text for the second badge under the main title."
+        },
+        "heroBadge2Icon": {
+          "type": "string",
+          "description": "Lucide icon name for the second badge."
+        },
+        "streamUrl": {
+          "type": "string",
+          "description": "The URL of the live audio stream for the radio.",
+          "format": "uri"
+        },
+        "autoplay": {
+          "type": "boolean",
+          "description": "Define se a rádio deve começar a tocar automaticamente ao carregar o site."
+        },
+        "metadataUrl": {
+          "type": "string",
+          "description": "The URL to fetch dynamic 'Now Playing' metadata.",
+          "format": "uri"
+        },
+        "useDynamicMetadata": {
+          "type": "boolean",
+          "description": "Whether to use the dynamic metadata URL or static text."
+        },
+        "defaultVolume": {
+          "type": "number",
+          "description": "The initial volume for new listeners (0 to 1).",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "defaultTheme": {
+          "type": "string",
+          "description": "O tema padrão do site (light ou dark).",
+          "enum": [
+            "light",
+            "dark"
+          ]
+        },
+        "nowPlayingText": {
+          "type": "string",
+          "description": "The text currently displayed in the 'Now Playing' section (static fallback)."
+        },
+        "aboutBadge": {
+          "type": "string",
+          "description": "Small text above the about title (e.g., 'Nossa Identidade')."
+        },
+        "aboutTitle": {
+          "type": "string",
+          "description": "The main heading for the 'About' section."
+        },
+        "aboutText": {
+          "type": "string",
+          "description": "The content for the 'About' section on the homepage."
+        },
+        "aboutImageUrl": {
+          "type": "string",
+          "description": "The URL for the image displayed in the About section.",
+          "format": "uri"
+        },
+        "showAboutImage": {
+          "type": "boolean",
+          "description": "Define se a imagem da seção Sobre deve ser exibida."
+        },
+        "verseText": {
+          "type": "string",
+          "description": "A prominent Bible verse displayed on the homepage or footer."
+        },
+        "showAbout": {
+          "type": "boolean",
+          "description": "Controls the visibility of the 'About' section on the homepage."
+        },
+        "showProgramacao": {
+          "type": "boolean",
+          "description": "Controls the visibility of the 'Programming' section on the homepage."
+        },
+        "showVersiculo": {
+          "type": "boolean",
+          "description": "Controls the visibility of the main Bible verse section on the homepage."
+        },
+        "showNowPlaying": {
+          "type": "boolean",
+          "description": "Controls the visibility of the 'Now Playing' section on the homepage."
+        },
+        "showFooter": {
+          "type": "boolean",
+          "description": "Master control for the entire footer section."
+        },
+        "footerDescription": {
+          "type": "string",
+          "description": "Short description text displayed in the footer."
+        },
+        "showFooterDescription": {
+          "type": "boolean",
+          "description": "Controls the visibility of the brand/description column in the footer."
+        },
+        "footerStatusText": {
+          "type": "string",
+          "description": "Texto de status no rodapé (ex: 'Transmitindo Esperança 24h')."
+        },
+        "footerStatusIcon": {
+          "type": "string",
+          "description": "Ícone da Lucide para o status no rodapé."
+        },
+        "showSocial": {
+          "type": "boolean",
+          "description": "Master control for the social media links section."
+        },
+        "showInstagram": {
+          "type": "boolean",
+          "description": "Controls the visibility of the Instagram link."
+        },
+        "showFacebook": {
+          "type": "boolean",
+          "description": "Controls the visibility of the Facebook link."
+        },
+        "showYoutube": {
+          "type": "boolean",
+          "description": "Controls the visibility of the YouTube link."
+        },
+        "showUsefulLinks": {
+          "type": "boolean",
+          "description": "Controls the visibility of the useful links section in the footer."
+        },
+        "showContact": {
+          "type": "boolean",
+          "description": "Controls the visibility of the contact section in the footer."
+        },
+        "copyrightText": {
+          "type": "string",
+          "description": "The copyright notice for the application, typically displayed in the footer."
+        },
+        "socialMediaLinks": {
+          "type": "array",
+          "description": "A list of social media profiles associated with the radio station.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usefulLinks": {
+          "type": "array",
+          "description": "A list of custom links for the footer.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "label",
+              "url"
+            ]
+          }
+        }
+      },
+      "required": [
+        "id",
+        "appName",
+        "slogan",
+        "streamUrl",
+        "showAbout",
+        "showProgramacao",
+        "showVersiculo",
+        "showNowPlaying",
+        "showSocial",
+        "showUsefulLinks",
+        "showContact",
+        "copyrightText",
+        "showHeroBackground"
+      ]
+    },
+    "Program": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Program",
+      "type": "object",
+      "description": "Represents an individual radio program or show within the Rádio Vida broadcast schedule.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Program entity."
+        },
+        "horario": {
+          "type": "string",
+          "description": "The broadcast time or schedule description for the program (e.g., 'Segunda a Sexta, 8h às 9h')."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name or title of the radio program."
+        },
+        "presenter": {
+          "type": "string",
+          "description": "The name of the host or presenter for the program."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the program's content or theme."
+        }
+      },
+      "required": [
+        "id",
+        "horario",
+        "name",
+        "presenter"
+      ]
+    },
+    "AdminRole": {
+      "title": "AdminRole",
+      "type": "object",
+      "properties": {},
+      "description": "Represents administrative access."
+    }
+  },
+  "auth": {
+    "providers": [
+      "password"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/config/main",
+        "definition": {
+          "entityName": "Config",
+          "schema": {
+            "$ref": "#/backend/entities/Config"
+          },
+          "description": "Stores the single global configuration document."
+        }
+      },
+      {
+        "path": "/programs/{programId}",
+        "definition": {
+          "entityName": "Program",
+          "schema": {
+            "$ref": "#/backend/entities/Program"
+          },
+          "description": "Radio programs schedule."
+        }
+      },
+      {
+        "path": "/roles_admin/{adminId}",
+        "definition": {
+          "entityName": "AdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/AdminRole"
+          },
+          "description": "Administrator roles collection."
+        }
+      }
+    ]
+  }
+}
