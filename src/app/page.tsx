@@ -67,6 +67,8 @@ export default function Home() {
   const siteConfig = config || {
     appName: 'Rádio Vida',
     slogan: 'A voz da esperança 24h',
+    logoImageUrl: '',
+    logoSize: 320,
     maintenanceMode: false,
     showAboutImage: true,
     showNoticeBar: false,
@@ -249,18 +251,41 @@ export default function Home() {
           )}
 
           <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-12 duration-1000">
-            <div className="flex justify-center mb-8">
-              <div className="relative p-1 rounded-full bg-secondary/20 ring-1 ring-secondary/50">
-                <Cross className="h-20 w-20 text-secondary" />
-                <div className="absolute inset-0 blur-2xl bg-secondary/30 rounded-full -z-10" />
+            {siteConfig.logoImageUrl ? (
+              <div className="flex justify-center mb-12">
+                <div 
+                  className="relative transition-all duration-300"
+                  style={{ 
+                    width: `${siteConfig.logoSize || 320}px`, 
+                    height: `${siteConfig.logoSize || 320}px`,
+                    maxWidth: '100%' 
+                  }}
+                >
+                  <Image 
+                    src={siteConfig.logoImageUrl}
+                    alt="Logo da Rádio"
+                    fill
+                    className="object-contain drop-shadow-2xl"
+                    priority
+                  />
+                </div>
               </div>
-            </div>
-            <h1 className="text-6xl md:text-9xl font-black font-headline mb-6 tracking-tighter text-foreground">
-              {firstNamePart} <span className="text-secondary">{restNameParts}</span>
-            </h1>
-            <p className="text-xl md:text-2xl font-body text-muted-foreground uppercase tracking-[0.3em] mb-12">
-              {siteConfig.slogan}
-            </p>
+            ) : (
+              <>
+                <div className="flex justify-center mb-8">
+                  <div className="relative p-1 rounded-full bg-secondary/20 ring-1 ring-secondary/50">
+                    <Cross className="h-20 w-20 text-secondary" />
+                    <div className="absolute inset-0 blur-2xl bg-secondary/30 rounded-full -z-10" />
+                  </div>
+                </div>
+                <h1 className="text-6xl md:text-9xl font-black font-headline mb-6 tracking-tighter text-foreground">
+                  {firstNamePart} <span className="text-secondary">{restNameParts}</span>
+                </h1>
+                <p className="text-xl md:text-2xl font-body text-muted-foreground uppercase tracking-[0.3em] mb-12">
+                  {siteConfig.slogan}
+                </p>
+              </>
+            )}
             
             <div className="flex flex-wrap justify-center gap-6">
               {siteConfig.heroBadge1Text && (
@@ -391,7 +416,7 @@ export default function Home() {
                     Links Úteis
                   </h4>
                   <ul className="grid grid-cols-1 gap-4 text-muted-foreground text-base">
-                    {usefulLinks.map((link, i) => (
+                    {usefulLinks.map((link: { url: string; label: string }, i: number) => (
                       <li key={i}>
                         <a href={link.url} className="hover:text-secondary hover:translate-x-2 transition-all inline-flex items-center gap-2 group">
                           <ChevronRight className="h-4 w-4 text-secondary/50 group-hover:text-secondary" />

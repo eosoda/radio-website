@@ -19,6 +19,17 @@
           "type": "string",
           "description": "The tagline or slogan for the radio station."
         },
+        "logoImageUrl": {
+          "type": "string",
+          "description": "URL of the radio's logo image. If provided, hides text name and slogan.",
+          "format": "uri"
+        },
+        "logoSize": {
+          "type": "number",
+          "description": "Size (width and height) of the logo in pixels.",
+          "minimum": 100,
+          "maximum": 800
+        },
         "maintenanceMode": {
           "type": "boolean",
           "description": "Ativa o modo de manutenção, ocultando o site para visitantes e mostrando uma mensagem de 'Voltamos logo'."

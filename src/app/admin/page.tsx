@@ -149,6 +149,8 @@ export default function AdminDashboard() {
       setLocalConfig({
         appName: 'Rádio Vida',
         slogan: 'A Voz da Esperança 24h',
+        logoImageUrl: '',
+        logoSize: 320,
         maintenanceMode: false,
         showNoticeBar: false,
         noticeBarFixed: false,
@@ -444,6 +446,34 @@ export default function AdminDashboard() {
                         onChange={e => setLocalConfig({...localConfig, slogan: e.target.value})} 
                         className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm"
                       />
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-white/5 space-y-4">
+                    <Label className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                      <ImageIcon className="h-4 w-4 text-secondary" /> Logo da Rádio (Substitui Nome e Slogan na Home)
+                    </Label>
+                    <div className="space-y-4">
+                      <input 
+                        value={localConfig.logoImageUrl || ''} 
+                        onChange={e => setLocalConfig({...localConfig, logoImageUrl: e.target.value})} 
+                        className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm"
+                        placeholder="https://exemplo.com/logo.png (Fundo transparente recomendado)"
+                      />
+                      {localConfig.logoImageUrl && (
+                        <div className="space-y-4 pt-2">
+                          <Label className="text-sm font-bold flex items-center justify-between">
+                            <span>Tamanho da Logo: {localConfig.logoSize || 320}px</span>
+                          </Label>
+                          <Slider 
+                            value={[localConfig.logoSize || 320]} 
+                            min={100}
+                            max={800}
+                            step={10}
+                            onValueChange={(v) => setLocalConfig({...localConfig, logoSize: v[0]})}
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
