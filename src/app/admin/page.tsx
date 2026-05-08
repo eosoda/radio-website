@@ -134,6 +134,7 @@ export default function AdminDashboard() {
   const [usefulLinks, setUsefulLinks] = useState<{ label: string; url: string }[]>([]);
   const [newLink, setNewLink] = useState({ label: '', url: '' });
   const [editingLinkIndex, setEditingLinkIndex] = useState<number | null>(null);
+  const [showLogoPreview, setShowLogoPreview] = useState(true);
 
   useEffect(() => {
     if (config) {
@@ -458,20 +459,53 @@ export default function AdminDashboard() {
                         value={localConfig.logoImageUrl || ''} 
                         onChange={e => setLocalConfig({...localConfig, logoImageUrl: e.target.value})} 
                         className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm"
-                        placeholder="https://exemplo.com/logo.png (Fundo transparente recomendado)"
+                        placeholder="https://i.imgur.com/suaimagem.png (Hospede no imgur.com)"
                       />
                       {localConfig.logoImageUrl && (
-                        <div className="space-y-4 pt-2">
-                          <Label className="text-sm font-bold flex items-center justify-between">
-                            <span>Tamanho da Logo: {localConfig.logoSize || 320}px</span>
-                          </Label>
-                          <Slider 
-                            value={[localConfig.logoSize || 320]} 
-                            min={100}
-                            max={800}
-                            step={10}
-                            onValueChange={(v) => setLocalConfig({...localConfig, logoSize: v[0]})}
-                          />
+                        <div className="space-y-6 pt-4 border-t border-white/5">
+                          <div className="space-y-4">
+                            <Label className="text-sm font-bold flex items-center justify-between">
+                              <span>Tamanho da Logo: {localConfig.logoSize || 320}px</span>
+                            </Label>
+                            <Slider 
+                              value={[localConfig.logoSize || 320]} 
+                              min={100}
+                              max={800}
+                              step={10}
+                              onValueChange={(v) => setLocalConfig({...localConfig, logoSize: v[0]})}
+                            />
+                          </div>
+
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="w-full text-xs border-white/10 hover:bg-white/5" 
+                            onClick={() => setShowLogoPreview(!showLogoPreview)}
+                          >
+                            {showLogoPreview ? 'Ocultar Pré-visualização' : 'Mostrar Pré-visualização'}
+                          </Button>
+
+                          {showLogoPreview && (
+                            <div className="p-6 rounded-xl border border-white/10 bg-background/30 flex flex-col items-center justify-center overflow-hidden animate-in fade-in slide-in-from-top-2">
+                              <Label className="text-[10px] uppercase tracking-widest text-muted-foreground mb-6 w-full text-center">Pré-visualização do Tamanho</Label>
+                            <div 
+                              className="relative transition-all duration-300 flex items-center justify-center"
+                              style={{ 
+                                width: `${localConfig.logoSize || 320}px`, 
+                                height: `${localConfig.logoSize || 320}px`,
+                                maxWidth: '100%',
+                                maxHeight: '400px'
+                              }}
+                            >
+                              <img 
+                                src={localConfig.logoImageUrl} 
+                                alt="Preview da Logo" 
+                                className="w-full h-full object-contain drop-shadow-xl"
+                                onError={(e) => (e.currentTarget.style.opacity = '0.5')}
+                              />
+                            </div>
+                          </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -494,7 +528,7 @@ export default function AdminDashboard() {
                           value={localConfig.heroBackgroundImageUrl || ''} 
                           onChange={e => setLocalConfig({...localConfig, heroBackgroundImageUrl: e.target.value})} 
                           className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm"
-                          placeholder="https://exemplo.com/imagem.jpg"
+                          placeholder="https://i.imgur.com/suaimagem.jpg (Hospede no imgur.com)"
                         />
                       </div>
                     )}
@@ -730,7 +764,7 @@ export default function AdminDashboard() {
                           value={localConfig.aboutImageUrl || ''} 
                           onChange={e => setLocalConfig({...localConfig, aboutImageUrl: e.target.value})} 
                           className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm"
-                          placeholder="https://exemplo.com/sobre.jpg"
+                          placeholder="https://i.imgur.com/suaimagem.jpg (Hospede no imgur.com)"
                         />
                       </div>
                     )}
