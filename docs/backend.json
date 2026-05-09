@@ -95,6 +95,10 @@
           "type": "string",
           "description": "Lucide icon name for the first badge."
         },
+        "showHeroBadge1": {
+          "type": "boolean",
+          "description": "Controls the visibility of the first hero badge."
+        },
         "heroBadge2Text": {
           "type": "string",
           "description": "Text for the second badge under the main title."
@@ -102,6 +106,10 @@
         "heroBadge2Icon": {
           "type": "string",
           "description": "Lucide icon name for the second badge."
+        },
+        "showHeroBadge2": {
+          "type": "boolean",
+          "description": "Controls the visibility of the second hero badge."
         },
         "streamUrl": {
           "type": "string",

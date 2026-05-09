@@ -156,6 +156,8 @@ export default function AdminDashboard() {
         showRadioSlogan: true,
         showHeroIcon: true,
         showRadioLogo: true,
+        showHeroBadge1: true,
+        showHeroBadge2: true,
         maintenanceMode: false,
         showNoticeBar: false,
         noticeBarFixed: false,
@@ -732,7 +734,13 @@ export default function AdminDashboard() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-white/5">
                     <div className="space-y-4">
-                      <Label className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-2"><Star className="h-4 w-4 text-secondary" /> Destaque 1</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-2"><Star className="h-4 w-4 text-secondary" /> Destaque 1</Label>
+                        <Switch 
+                          checked={localConfig.showHeroBadge1 !== false} 
+                          onCheckedChange={v => setLocalConfig({...localConfig, showHeroBadge1: v})}
+                        />
+                      </div>
                       <div className="grid grid-cols-1 gap-2">
                         <input value={localConfig.heroBadge1Text || ''} onChange={e => setLocalConfig({...localConfig, heroBadge1Text: e.target.value})} className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm" />
                         <Select value={localConfig.heroBadge1Icon || 'Clock'} onValueChange={(val) => setLocalConfig({...localConfig, heroBadge1Icon: val})}>
@@ -742,7 +750,13 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="space-y-4">
-                      <Label className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-2"><Star className="h-4 w-4 text-secondary" /> Destaque 2</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-2"><Star className="h-4 w-4 text-secondary" /> Destaque 2</Label>
+                        <Switch 
+                          checked={localConfig.showHeroBadge2 !== false} 
+                          onCheckedChange={v => setLocalConfig({...localConfig, showHeroBadge2: v})}
+                        />
+                      </div>
                       <div className="grid grid-cols-1 gap-2">
                         <input value={localConfig.heroBadge2Text || ''} onChange={e => setLocalConfig({...localConfig, heroBadge2Text: e.target.value})} className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm" />
                         <Select value={localConfig.heroBadge2Icon || 'Music'} onValueChange={(val) => setLocalConfig({...localConfig, heroBadge2Icon: val})}>

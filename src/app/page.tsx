@@ -73,6 +73,8 @@ export default function Home() {
     showRadioSlogan: true,
     showHeroIcon: true,
     showRadioLogo: true,
+    showHeroBadge1: true,
+    showHeroBadge2: true,
     maintenanceMode: false,
     showAboutImage: true,
     showNoticeBar: false,
@@ -298,13 +300,13 @@ export default function Home() {
             )}
             
             <div className="flex flex-wrap justify-center gap-6">
-              {siteConfig.heroBadge1Text && (
+              {siteConfig.heroBadge1Text && siteConfig.showHeroBadge1 !== false && (
                 <Badge variant="outline" className="text-secondary border-secondary/50 px-6 py-2 text-sm backdrop-blur-md bg-secondary/5">
                   <DynamicIcon name={siteConfig.heroBadge1Icon} className="h-4 w-4 mr-2" />
                   {siteConfig.heroBadge1Text}
                 </Badge>
               )}
-              {siteConfig.heroBadge2Text && (
+              {siteConfig.heroBadge2Text && siteConfig.showHeroBadge2 !== false && (
                 <Badge variant="outline" className="text-secondary border-secondary/50 px-6 py-2 text-sm backdrop-blur-md bg-secondary/5">
                   <DynamicIcon name={siteConfig.heroBadge2Icon} className="h-4 w-4 mr-2" />
                   {siteConfig.heroBadge2Text}
