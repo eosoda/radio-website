@@ -69,6 +69,10 @@ export default function Home() {
     slogan: 'A voz da esperança 24h',
     logoImageUrl: '',
     logoSize: 320,
+    showRadioName: true,
+    showRadioSlogan: true,
+    showHeroIcon: true,
+    showRadioLogo: true,
     maintenanceMode: false,
     showAboutImage: true,
     showNoticeBar: false,
@@ -250,8 +254,8 @@ export default function Home() {
             </div>
           )}
 
-          <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-12 duration-1000">
-            {siteConfig.logoImageUrl ? (
+          <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-12 duration-1000 flex flex-col items-center">
+            {siteConfig.logoImageUrl && siteConfig.showRadioLogo !== false && (
               <div className="flex justify-center mb-12">
                 <div 
                   className="relative transition-all duration-300"
@@ -270,21 +274,27 @@ export default function Home() {
                   />
                 </div>
               </div>
-            ) : (
-              <>
-                <div className="flex justify-center mb-8">
-                  <div className="relative p-1 rounded-full bg-secondary/20 ring-1 ring-secondary/50">
-                    <Cross className="h-20 w-20 text-secondary" />
-                    <div className="absolute inset-0 blur-2xl bg-secondary/30 rounded-full -z-10" />
-                  </div>
+            )}
+
+            {siteConfig.showHeroIcon !== false && (
+              <div className="flex justify-center mb-8">
+                <div className="relative p-1 rounded-full bg-secondary/20 ring-1 ring-secondary/50">
+                  <Cross className="h-20 w-20 text-secondary" />
+                  <div className="absolute inset-0 blur-2xl bg-secondary/30 rounded-full -z-10" />
                 </div>
-                <h1 className="text-6xl md:text-9xl font-black font-headline mb-6 tracking-tighter text-foreground">
-                  {firstNamePart} <span className="text-secondary">{restNameParts}</span>
-                </h1>
-                <p className="text-xl md:text-2xl font-body text-muted-foreground uppercase tracking-[0.3em] mb-12">
-                  {siteConfig.slogan}
-                </p>
-              </>
+              </div>
+            )}
+
+            {siteConfig.showRadioName !== false && (
+              <h1 className="text-6xl md:text-9xl font-black font-headline mb-6 tracking-tighter text-foreground text-center">
+                {firstNamePart} <span className="text-secondary">{restNameParts}</span>
+              </h1>
+            )}
+
+            {siteConfig.showRadioSlogan !== false && (
+              <p className="text-xl md:text-2xl font-body text-muted-foreground uppercase tracking-[0.3em] mb-12 text-center">
+                {siteConfig.slogan}
+              </p>
             )}
             
             <div className="flex flex-wrap justify-center gap-6">

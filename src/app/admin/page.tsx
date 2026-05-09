@@ -134,7 +134,7 @@ export default function AdminDashboard() {
   const [usefulLinks, setUsefulLinks] = useState<{ label: string; url: string }[]>([]);
   const [newLink, setNewLink] = useState({ label: '', url: '' });
   const [editingLinkIndex, setEditingLinkIndex] = useState<number | null>(null);
-  const [showLogoPreview, setShowLogoPreview] = useState(true);
+  const [showLogoPreview, setShowLogoPreview] = useState(false);
 
   useEffect(() => {
     if (config) {
@@ -152,6 +152,10 @@ export default function AdminDashboard() {
         slogan: 'A Voz da Esperança 24h',
         logoImageUrl: '',
         logoSize: 320,
+        showRadioName: true,
+        showRadioSlogan: true,
+        showHeroIcon: true,
+        showRadioLogo: true,
         maintenanceMode: false,
         showNoticeBar: false,
         noticeBarFixed: false,
@@ -433,7 +437,13 @@ export default function AdminDashboard() {
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="text-xs">Nome da Rádio</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Nome da Rádio</Label>
+                        <Switch 
+                          checked={localConfig.showRadioName !== false} 
+                          onCheckedChange={v => setLocalConfig({...localConfig, showRadioName: v})}
+                        />
+                      </div>
                       <input 
                         value={localConfig.appName || ''} 
                         onChange={e => setLocalConfig({...localConfig, appName: e.target.value})} 
@@ -441,7 +451,13 @@ export default function AdminDashboard() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Slogan</Label>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">Slogan</Label>
+                        <Switch 
+                          checked={localConfig.showRadioSlogan !== false} 
+                          onCheckedChange={v => setLocalConfig({...localConfig, showRadioSlogan: v})}
+                        />
+                      </div>
                       <input 
                         value={localConfig.slogan || ''} 
                         onChange={e => setLocalConfig({...localConfig, slogan: e.target.value})} 
@@ -451,13 +467,35 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="pt-6 border-t border-white/5 space-y-4">
-                    <Label className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-                      <ImageIcon className="h-4 w-4 text-secondary" /> Logo da Rádio (Substitui Nome e Slogan na Home)
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                        <Cross className="h-4 w-4 text-secondary" /> Ícone Central (SVG)
+                      </Label>
+                      <Switch 
+                        checked={localConfig.showHeroIcon !== false} 
+                        onCheckedChange={v => setLocalConfig({...localConfig, showHeroIcon: v})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t border-white/5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+                        <ImageIcon className="h-4 w-4 text-secondary" /> Logo da Rádio
+                      </Label>
+                      <Switch 
+                        checked={localConfig.showRadioLogo !== false} 
+                        onCheckedChange={v => setLocalConfig({...localConfig, showRadioLogo: v})}
+                      />
+                    </div>
                     <div className="space-y-4">
                       <input 
                         value={localConfig.logoImageUrl || ''} 
-                        onChange={e => setLocalConfig({...localConfig, logoImageUrl: e.target.value})} 
+                        onChange={e => {
+                          setLocalConfig({...localConfig, logoImageUrl: e.target.value});
+                          if (e.target.value && e.target.value !== localConfig.logoImageUrl) setShowLogoPreview(true);
+                          else if (!e.target.value) setShowLogoPreview(false);
+                        }} 
                         className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm"
                         placeholder="https://i.imgur.com/suaimagem.png (Hospede no imgur.com)"
                       />
@@ -466,6 +504,14 @@ export default function AdminDashboard() {
                           <div className="space-y-4">
                             <Label className="text-sm font-bold flex items-center justify-between">
                               <span>Tamanho da Logo: {localConfig.logoSize || 320}px</span>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-6 px-3 text-[10px] border-white/10 hover:bg-white/5" 
+                                onClick={() => setShowLogoPreview(!showLogoPreview)}
+                              >
+                                {showLogoPreview ? 'Ocultar Prévia' : 'Mostrar Prévia'}
+                              </Button>
                             </Label>
                             <Slider 
                               value={[localConfig.logoSize || 320]} 
@@ -475,15 +521,6 @@ export default function AdminDashboard() {
                               onValueChange={(v) => setLocalConfig({...localConfig, logoSize: v[0]})}
                             />
                           </div>
-
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="w-full text-xs border-white/10 hover:bg-white/5" 
-                            onClick={() => setShowLogoPreview(!showLogoPreview)}
-                          >
-                            {showLogoPreview ? 'Ocultar Pré-visualização' : 'Mostrar Pré-visualização'}
-                          </Button>
 
                           {showLogoPreview && (
                             <div className="p-6 rounded-xl border border-white/10 bg-background/30 flex flex-col items-center justify-center overflow-hidden animate-in fade-in slide-in-from-top-2">

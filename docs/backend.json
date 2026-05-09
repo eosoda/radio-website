@@ -30,6 +30,22 @@
           "minimum": 100,
           "maximum": 800
         },
+        "showRadioName": {
+          "type": "boolean",
+          "description": "Controls the visibility of the radio name text on the hero section."
+        },
+        "showRadioSlogan": {
+          "type": "boolean",
+          "description": "Controls the visibility of the slogan text on the hero section."
+        },
+        "showHeroIcon": {
+          "type": "boolean",
+          "description": "Controls the visibility of the central SVG icon on the hero section."
+        },
+        "showRadioLogo": {
+          "type": "boolean",
+          "description": "Controls the visibility of the uploaded logo image on the hero section."
+        },
         "maintenanceMode": {
           "type": "boolean",
           "description": "Ativa o modo de manutenção, ocultando o site para visitantes e mostrando uma mensagem de 'Voltamos logo'."
