@@ -64,6 +64,7 @@ export default function Home() {
   const [activeNotices, setActiveNotices] = useState<any[]>([]);
   const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
   const [selectedVerse, setSelectedVerse] = useState('');
+  const [prevVersesListStr, setPrevVersesListStr] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -147,6 +148,22 @@ export default function Home() {
   const noticesListStr = JSON.stringify(siteConfig.noticesList);
   const versesListStr = JSON.stringify(siteConfig.versesList);
 
+  // Seleciona um versículo aleatório durante a renderização para evitar flashes/layout shift
+  if (mounted && versesListStr !== prevVersesListStr) {
+    const list = siteConfig.versesList || [];
+    let chosen = '';
+    if (list.length > 0) {
+      const randomIndex = Math.floor(Math.random() * list.length);
+      chosen = list[randomIndex];
+    } else if (siteConfig.verseText) {
+      chosen = siteConfig.verseText;
+    } else {
+      chosen = '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105';
+    }
+    setPrevVersesListStr(versesListStr);
+    setSelectedVerse(chosen);
+  }
+
   // Efeito para validar e filtrar avisos ativos apenas no cliente
   useEffect(() => {
     if (mounted && siteConfig.showNoticeBar) {
@@ -188,20 +205,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [activeNotices]);
 
-  // Efeito para selecionar um versículo aleatório
-  useEffect(() => {
-    if (mounted) {
-      const list = siteConfig.versesList || [];
-      if (list.length > 0) {
-        const randomIndex = Math.floor(Math.random() * list.length);
-        setSelectedVerse(list[randomIndex]);
-      } else if (siteConfig.verseText) {
-        setSelectedVerse(siteConfig.verseText);
-      } else {
-        setSelectedVerse('"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105');
-      }
-    }
-  }, [mounted, versesListStr, siteConfig.verseText]);
 
   const worshipImg = PlaceHolderImages.find(img => img.id === 'gospel-worship');
   const studioImg = PlaceHolderImages.find(img => img.id === 'radio-studio');
@@ -697,7 +700,11 @@ export default function Home() {
                       <Music className="h-8 w-8 text-secondary" />
                    </div>
                    <h3 className="text-3xl md:text-4xl font-headline italic leading-relaxed drop-shadow-lg">
-                    {selectedVerse || siteConfig.verseText}
+                    {selectedVerse ? (
+                      selectedVerse
+                    ) : (
+                      <span className="inline-block h-8 bg-secondary/20 animate-pulse rounded w-3/4 mx-auto" />
+                    )}
                    </h3>
                    <div className="h-1 w-24 bg-secondary mx-auto rounded-full" />
                  </div>
