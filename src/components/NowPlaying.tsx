@@ -52,7 +52,7 @@ export default function NowPlaying({
   return (
     <div className={cn(
       "text-xs transition-all duration-500 max-w-[180px] md:max-w-[250px] overflow-hidden",
-      isError ? "text-red-400 font-bold" : "text-muted-foreground italic",
+      isError ? "text-destructive font-bold" : "text-muted-foreground italic",
       className
     )}>
       <div className="flex items-center overflow-hidden">

@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import * as LucideIcons from 'lucide-react';
 import { 
@@ -31,11 +31,13 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { Slider } from '@/components/ui/slider';
 import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
 import { doc, collection } from 'firebase/firestore';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useAudioStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
+import NowPlaying from '@/components/NowPlaying';
 
 /**
  * Componente para renderizar dinamicamente um ícone da Lucide
@@ -48,9 +50,20 @@ const DynamicIcon = ({ name, className }: { name?: string, className?: string })
 
 export default function Home() {
   const db = useFirestore();
-  const { theme, setTheme } = useAudioStore();
+  const { 
+    theme, 
+    setTheme, 
+    isPlaying, 
+    setIsPlaying,
+    volume,
+    setVolume,
+    isMuted,
+    setIsMuted
+  } = useAudioStore();
   const [mounted, setMounted] = useState(false);
-  const [showNoticeBar, setShowNoticeBar] = useState(false);
+  const [activeNotices, setActiveNotices] = useState<any[]>([]);
+  const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
+  const [selectedVerse, setSelectedVerse] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -64,67 +77,131 @@ export default function Home() {
   const programsRef = useMemoFirebase(() => collection(db, 'programs'), [db]);
   const { data: programs, isLoading: isProgramsLoading } = useCollection(programsRef);
 
-  const siteConfig = config || {
-    appName: 'Rádio Vida',
-    slogan: 'A voz da esperança 24h',
-    logoImageUrl: '',
-    logoSize: 320,
-    showRadioName: true,
-    showRadioSlogan: true,
-    showHeroIcon: true,
-    showRadioLogo: true,
-    showHeroBadge1: true,
-    showHeroBadge2: true,
-    maintenanceMode: false,
-    showAboutImage: true,
-    showNoticeBar: false,
-    noticeBarFixed: false,
-    noticeBarText: '',
-    noticeBarIcon: 'Megaphone',
-    noticeBarExpiresAt: '',
-    noticeBarLinkText: '',
-    noticeBarLinkUrl: '',
-    heroBackgroundImageUrl: '',
-    showHeroBackground: true,
-    aboutImageUrl: '',
-    heroBadge1Text: 'AO VIVO 24H',
-    heroBadge1Icon: 'Clock',
-    heroBadge2Text: 'LOUVOR & ADORAÇÃO',
-    heroBadge2Icon: 'Music',
-    aboutBadge: 'Nossa Identidade',
-    aboutTitle: 'Levando Esperança através das Ondas',
-    aboutText: 'Levando a palavra de Deus a todos os lares através do louvor e da edificação espiritual.',
-    verseText: '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
-    showAbout: true,
-    showProgramacao: true,
-    showVersiculo: true,
-    showNowPlaying: true,
-    showFooter: true,
-    showFooterDescription: true,
-    footerDescription: 'Levando o evangelho através das ondas sonoras. Uma rádio comprometida com a verdade bíblica e o amor de Cristo para todos os lares.',
-    footerStatusText: 'Transmitindo Esperança 24h',
-    footerStatusIcon: 'Radio',
-    showSocial: true,
-    showInstagram: true,
-    showFacebook: true,
-    showYoutube: true,
-    showUsefulLinks: true,
-    showContact: true,
-    copyrightText: 'Rádio Vida - Todos os direitos reservados.',
-    socialMediaLinks: [],
-    usefulLinks: []
-  };
+  const siteConfig = useMemo(() => {
+    return {
+      appName: config?.appName || 'Rádio Vida',
+      slogan: config?.slogan || 'A voz da esperança 24h',
+      logoImageUrl: config?.logoImageUrl || '',
+      logoSize: config?.logoSize !== undefined ? config.logoSize : 320,
+      showRadioName: config?.showRadioName !== false,
+      showRadioSlogan: config?.showRadioSlogan !== false,
+      showHeroIcon: config?.showHeroIcon !== false,
+      showRadioLogo: config?.showRadioLogo !== false,
+      showHeroBadge1: config?.showHeroBadge1 !== false,
+      showHeroBadge2: config?.showHeroBadge2 !== false,
+      maintenanceMode: config?.maintenanceMode === true,
+      showAboutImage: config?.showAboutImage !== false,
+      showNoticeBar: config?.showNoticeBar === true,
+      noticeBarFixed: config?.noticeBarFixed === true,
+      noticeBarText: config?.noticeBarText || '',
+      noticeBarIcon: config?.noticeBarIcon || 'Megaphone',
+      noticeBarExpiresAt: config?.noticeBarExpiresAt || '',
+      noticeBarLinkText: config?.noticeBarLinkText || '',
+      noticeBarLinkUrl: config?.noticeBarLinkUrl || '',
+      heroBackgroundImageUrl: config?.heroBackgroundImageUrl || '',
+      showHeroBackground: config?.showHeroBackground !== false,
+      heroBgOpacity: config?.heroBgOpacity !== undefined ? config.heroBgOpacity : 0.2,
+      heroOverlayOpacity: config?.heroOverlayOpacity !== undefined ? config.heroOverlayOpacity : 0.6,
+      heroLayout: config?.heroLayout || 'classic',
+      noticesList: config?.noticesList || [],
+      aboutImageUrl: config?.aboutImageUrl || '',
+      heroBadge1Text: config?.heroBadge1Text || 'AO VIVO 24H',
+      heroBadge1Icon: config?.heroBadge1Icon || 'Clock',
+      heroBadge2Text: config?.heroBadge2Text || 'LOUVOR & ADORAÇÃO',
+      heroBadge2Icon: config?.heroBadge2Icon || 'Music',
+      aboutBadge: config?.aboutBadge || 'Nossa Identidade',
+      aboutTitle: config?.aboutTitle || 'Levando Esperança através das Ondas',
+      aboutText: config?.aboutText || 'Levando a palavra de Deus a todos os lares através do louvor e da edificação espiritual.',
+      verseText: config?.verseText || '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
+      versesList: config?.versesList || [
+        '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
+        '"Porque Deus tanto amou o mundo que deu o seu Filho Unigênito, para que todo o que nele crer não pereça, mas tenha a vida eterna." - João 3:16',
+        '"O Senhor é o meu pastor, nada me faltará." - Salmos 23:1',
+        '"Tudo posso naquele que me fortalece." - Filipenses 4:13',
+        '"Não fui eu que ordenei a você? Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar." - Josué 1:9'
+      ],
+      showAbout: config?.showAbout !== false,
+      showProgramacao: config?.showProgramacao !== false,
+      showVersiculo: config?.showVersiculo !== false,
+      showNowPlaying: config?.showNowPlaying !== false,
+      showFooter: config?.showFooter !== false,
+      showFooterDescription: config?.showFooterDescription !== false,
+      footerDescription: config?.footerDescription || 'Levando o evangelho através das ondas sonoras. Uma rádio comprometida com a verdade bíblica e o amor de Cristo para todos os lares.',
+      footerStatusText: config?.footerStatusText || 'Transmitindo Esperança 24h',
+      footerStatusIcon: config?.footerStatusIcon || 'Radio',
+      showSocial: config?.showSocial !== false,
+      showInstagram: config?.showInstagram !== false,
+      showFacebook: config?.showFacebook !== false,
+      showYoutube: config?.showYoutube !== false,
+      showUsefulLinks: config?.showUsefulLinks !== false,
+      showContact: config?.showContact !== false,
+      copyrightText: config?.copyrightText || 'Rádio Vida - Todos os direitos reservados.',
+      socialMediaLinks: config?.socialMediaLinks || [],
+      usefulLinks: config?.usefulLinks || [],
+      useDynamicMetadata: config?.useDynamicMetadata === true,
+      metadataUrl: config?.metadataUrl || '',
+      nowPlayingText: config?.nowPlayingText || 'Sintonizando Rádio Vida...'
+    };
+  }, [config]);
 
-  // Efeito para validar expiração da barra de avisos apenas no cliente
+  const noticesListStr = JSON.stringify(siteConfig.noticesList);
+  const versesListStr = JSON.stringify(siteConfig.versesList);
+
+  // Efeito para validar e filtrar avisos ativos apenas no cliente
   useEffect(() => {
-    if (mounted && siteConfig.showNoticeBar && siteConfig.noticeBarText) {
+    if (mounted && siteConfig.showNoticeBar) {
       const now = new Date();
-      const isNoticeExpired = siteConfig.noticeBarExpiresAt && new Date(siteConfig.noticeBarExpiresAt) < now;
-      setShowNoticeBar(!isNoticeExpired);
+      let list: any[] = [];
+      
+      if (siteConfig.noticesList && siteConfig.noticesList.length > 0) {
+        list = siteConfig.noticesList.filter((notice: any) => {
+          if (!notice.text) return false;
+          if (!notice.expiresAt) return true;
+          return new Date(notice.expiresAt) > now;
+        });
+      } else if (siteConfig.noticeBarText) {
+        const isNoticeExpired = siteConfig.noticeBarExpiresAt && new Date(siteConfig.noticeBarExpiresAt) < now;
+        if (!isNoticeExpired) {
+          list = [{
+            id: 'legacy',
+            text: siteConfig.noticeBarText,
+            icon: siteConfig.noticeBarIcon || 'Megaphone',
+            linkText: siteConfig.noticeBarLinkText,
+            linkUrl: siteConfig.noticeBarLinkUrl
+          }];
+        }
+      }
+      
+      setActiveNotices(list);
+      setCurrentNoticeIndex(0);
     } else {
-      setShowNoticeBar(false);
+      setActiveNotices([]);
     }
-  }, [mounted, siteConfig.showNoticeBar, siteConfig.noticeBarText, siteConfig.noticeBarExpiresAt]);
+  }, [mounted, siteConfig.showNoticeBar, noticesListStr, siteConfig.noticeBarText, siteConfig.noticeBarExpiresAt, siteConfig.noticeBarIcon, siteConfig.noticeBarLinkText, siteConfig.noticeBarLinkUrl]);
+
+  // Efeito para rodar o carrossel de avisos a cada 5 segundos
+  useEffect(() => {
+    if (activeNotices.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentNoticeIndex((prevIndex) => (prevIndex + 1) % activeNotices.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeNotices]);
+
+  // Efeito para selecionar um versículo aleatório
+  useEffect(() => {
+    if (mounted) {
+      const list = siteConfig.versesList || [];
+      if (list.length > 0) {
+        const randomIndex = Math.floor(Math.random() * list.length);
+        setSelectedVerse(list[randomIndex]);
+      } else if (siteConfig.verseText) {
+        setSelectedVerse(siteConfig.verseText);
+      } else {
+        setSelectedVerse('"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105');
+      }
+    }
+  }, [mounted, versesListStr, siteConfig.verseText]);
 
   const worshipImg = PlaceHolderImages.find(img => img.id === 'gospel-worship');
   const studioImg = PlaceHolderImages.find(img => img.id === 'radio-studio');
@@ -185,24 +262,27 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full min-h-screen">
       {/* Barra de Avisos Importantes */}
-      {showNoticeBar && (
+      {activeNotices.length > 0 && (
         <div className={cn(
-          "bg-secondary text-secondary-foreground py-2.5 px-4 text-center text-[10px] md:text-xs font-bold uppercase tracking-widest animate-in fade-in slide-in-from-top duration-500 z-[60]",
+          "bg-secondary text-secondary-foreground py-2.5 px-4 text-center text-[10px] md:text-xs font-bold uppercase tracking-widest z-[60]",
           siteConfig.noticeBarFixed && "sticky top-0 shadow-lg"
         )}>
-          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <div 
+            key={activeNotices[currentNoticeIndex]?.id || currentNoticeIndex}
+            className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 animate-in fade-in duration-500"
+          >
             <div className="flex items-center gap-2">
-              <DynamicIcon name={siteConfig.noticeBarIcon || 'Megaphone'} className="h-3 w-3 md:h-4 md:w-4" />
-              <span>{siteConfig.noticeBarText}</span>
+              <DynamicIcon name={activeNotices[currentNoticeIndex]?.icon || 'Megaphone'} className="h-3 w-3 md:h-4 md:w-4" />
+              <span>{activeNotices[currentNoticeIndex]?.text}</span>
             </div>
-            {siteConfig.noticeBarLinkText && siteConfig.noticeBarLinkUrl && (
+            {activeNotices[currentNoticeIndex]?.linkText && activeNotices[currentNoticeIndex]?.linkUrl && (
               <a 
-                href={siteConfig.noticeBarLinkUrl} 
+                href={activeNotices[currentNoticeIndex]?.linkUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-foreground/10 hover:bg-secondary-foreground/20 transition-colors border border-secondary-foreground/20 text-[9px] md:text-[11px]"
               >
-                {siteConfig.noticeBarLinkText}
+                {activeNotices[currentNoticeIndex]?.linkText}
                 <ArrowRight className="h-3 w-3" />
               </a>
             )}
@@ -248,160 +328,383 @@ export default function Home() {
                 src={heroImage}
                 alt="Hero Background"
                 fill
-                className="object-cover opacity-20 scale-105"
+                style={{ opacity: siteConfig.heroBgOpacity }}
+                className="object-cover scale-105"
                 priority
                 data-ai-hint={worshipImg?.imageHint || "worship gospel"}
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" />
+              <div 
+                style={{ opacity: siteConfig.heroOverlayOpacity }}
+                className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" 
+              />
             </div>
           )}
 
-          <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-12 duration-1000 flex flex-col items-center">
-            {siteConfig.logoImageUrl && siteConfig.showRadioLogo !== false && (
-              <div className="flex justify-center mb-12">
-                <div 
-                  className="relative transition-all duration-300"
-                  style={{ 
-                    width: `${siteConfig.logoSize || 320}px`, 
-                    height: `${siteConfig.logoSize || 320}px`,
-                    maxWidth: '100%' 
-                  }}
-                >
-                  <Image 
-                    src={siteConfig.logoImageUrl}
-                    alt="Logo da Rádio"
-                    fill
-                    className="object-contain drop-shadow-2xl"
-                    priority
+          {siteConfig.heroLayout === 'split' ? (
+            <div className="relative z-10 max-w-6xl w-full animate-in fade-in slide-in-from-bottom-12 duration-1000 grid grid-cols-1 md:grid-cols-2 items-center gap-12 text-center md:text-left">
+              {/* Coluna da Esquerda: Logo / Ícone + Nome, Slogan e Badges */}
+              <div className="flex flex-col items-center md:items-start space-y-6">
+                {siteConfig.logoImageUrl && siteConfig.showRadioLogo !== false ? (
+                  <div 
+                    className="relative transition-all duration-300"
+                    style={{ 
+                      width: `${Math.min(siteConfig.logoSize || 320, 400)}px`, 
+                      height: `${Math.min(siteConfig.logoSize || 320, 400)}px`,
+                      maxWidth: '100%' 
+                    }}
+                  >
+                    <Image 
+                      src={siteConfig.logoImageUrl}
+                      alt="Logo da Rádio"
+                      fill
+                      className="object-contain drop-shadow-2xl"
+                      priority
+                    />
+                  </div>
+                ) : (
+                  siteConfig.showHeroIcon !== false && (
+                    <div className="relative p-1 rounded-full bg-secondary/20 ring-1 ring-secondary/50">
+                      <Cross className="h-28 w-28 text-secondary" />
+                      <div className="absolute inset-0 blur-2xl bg-secondary/30 rounded-full -z-10" />
+                    </div>
+                  )
+                )}
+
+                {siteConfig.showRadioName !== false && (
+                  <h1 className="text-5xl md:text-7xl font-black font-headline tracking-tighter text-foreground">
+                    {firstNamePart} <span className="text-secondary">{restNameParts}</span>
+                  </h1>
+                )}
+
+                {siteConfig.showRadioSlogan !== false && (
+                  <p className="text-lg md:text-xl font-body text-muted-foreground uppercase tracking-[0.2em] max-w-lg">
+                    {siteConfig.slogan}
+                  </p>
+                )}
+                
+                <div className="flex flex-wrap gap-4 pt-4">
+                  {siteConfig.heroBadge1Text && siteConfig.showHeroBadge1 !== false && (
+                    <Badge variant="outline" className="text-secondary border-secondary/50 px-5 py-2 text-xs backdrop-blur-md bg-secondary/5">
+                      <DynamicIcon name={siteConfig.heroBadge1Icon} className="h-3.5 w-3.5 mr-2" />
+                      {siteConfig.heroBadge1Text}
+                    </Badge>
+                  )}
+                  {siteConfig.heroBadge2Text && siteConfig.showHeroBadge2 !== false && (
+                    <Badge variant="outline" className="text-secondary border-secondary/50 px-5 py-2 text-xs backdrop-blur-md bg-secondary/5">
+                      <DynamicIcon name={siteConfig.heroBadge2Icon} className="h-3.5 w-3.5 mr-2" />
+                      {siteConfig.heroBadge2Text}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Coluna da Direita: Glassmorphic Player Card com Controle de Volume */}
+              <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto">
+                <div className="w-full p-8 rounded-[2.5rem] border border-secondary/20 bg-background/40 backdrop-blur-xl shadow-2xl flex flex-col items-center space-y-6 relative overflow-hidden group">
+                  {/* Glow effect */}
+                  <div className={cn(
+                    "absolute -inset-10 bg-secondary/10 rounded-full blur-3xl transition-opacity duration-1000",
+                    isPlaying ? "opacity-100 animate-pulse" : "opacity-0"
+                  )} />
+                  
+                  {/* Header info */}
+                  <div className="relative text-center space-y-1">
+                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary/10 px-3 py-1 rounded-full">
+                      NO AR
+                    </span>
+                    <h2 className="text-2xl font-headline font-bold text-foreground pt-3">{siteConfig.appName}</h2>
+                    <p className="text-xs text-muted-foreground font-light">{siteConfig.slogan}</p>
+                  </div>
+
+                  {/* Big Play/Pause Button */}
+                  <div className="relative">
+                    <Button
+                      onClick={() => setIsPlaying(!isPlaying)}
+                      className={cn(
+                        "h-24 w-24 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-2xl transition-all duration-500 flex items-center justify-center",
+                        isPlaying ? "scale-105 shadow-[0_0_40px_rgba(0,199,169,0.4)]" : "hover:scale-105 animate-bounce scale-110 shadow-secondary/20"
+                      )}
+                    >
+                      {isPlaying ? (
+                        <LucideIcons.Pause className="h-10 w-10 fill-current text-secondary-foreground" />
+                      ) : (
+                        <LucideIcons.Play className="h-10 w-10 fill-current text-secondary-foreground ml-1" />
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Track Info (NowPlaying) */}
+                  <div className="relative w-full flex flex-col items-center space-y-2">
+                    <NowPlaying 
+                      useDynamic={siteConfig.useDynamicMetadata}
+                      metadataUrl={siteConfig.metadataUrl}
+                      staticText={siteConfig.nowPlayingText}
+                      className="text-center font-bold text-sm text-foreground not-italic max-w-[280px]"
+                    />
+                  </div>
+
+                  {/* Volume control */}
+                  <div className="relative w-full flex items-center gap-3 px-2 pt-2 border-t border-white/5">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => setIsMuted(!isMuted)} 
+                      className="text-muted-foreground hover:bg-secondary hover:text-secondary-foreground group h-8 w-8 rounded-full"
+                    >
+                      {isMuted || volume === 0 ? (
+                        <LucideIcons.VolumeX className="h-4 w-4 group-hover:text-secondary-foreground" />
+                      ) : (
+                        <LucideIcons.Volume2 className="h-4 w-4 group-hover:text-secondary-foreground" />
+                      )}
+                    </Button>
+                    <Slider 
+                      value={[volume * 100]} 
+                      max={100} 
+                      step={1} 
+                      onValueChange={(v) => {
+                        setVolume(v[0] / 100);
+                        if (v[0] > 0) setIsMuted(false);
+                      }}
+                      className="flex-1 cursor-pointer"
+                    />
+                    <span className="text-[10px] font-bold text-secondary w-8 text-right tabular-nums">
+                      {Math.round(volume * 100)}%
+                    </span>
+                  </div>
+
+                  {/* Large visualizer bars */}
+                  <div className="relative flex items-end justify-center gap-1.5 h-10 w-full px-4">
+                    {[...Array(15)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "w-1.5 bg-secondary rounded-full transition-all duration-300",
+                          isPlaying ? "hero-visualizer-bar" : "h-1"
+                        )}
+                        style={{
+                          animationDelay: isPlaying ? `${(i % 5) * 0.1}s` : '0s',
+                          animationDuration: `${0.5 + (i % 3) * 0.15}s`
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : siteConfig.heroLayout === 'clean' ? (
+            <div className="relative z-10 max-w-md w-full animate-in fade-in slide-in-from-bottom-12 duration-1000 flex flex-col items-center">
+              {/* Glassmorphic Player Card */}
+              <div className="w-full p-8 rounded-[2.5rem] border border-secondary/20 bg-background/40 backdrop-blur-xl shadow-2xl flex flex-col items-center space-y-8 relative overflow-hidden group">
+                {/* Glow effect */}
+                <div className={cn(
+                  "absolute -inset-10 bg-secondary/10 rounded-full blur-3xl transition-opacity duration-1000",
+                  isPlaying ? "opacity-100 animate-pulse" : "opacity-0"
+                )} />
+                
+                {/* Header info */}
+                <div className="relative text-center space-y-1">
+                  <span className="text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary/10 px-3 py-1 rounded-full">
+                    NO AR
+                  </span>
+                  <h2 className="text-2xl font-headline font-bold text-foreground pt-3">{siteConfig.appName}</h2>
+                  <p className="text-xs text-muted-foreground font-light">{siteConfig.slogan}</p>
+                </div>
+
+                {/* Big Play/Pause Button */}
+                <div className="relative">
+                  <Button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className={cn(
+                      "h-28 w-28 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-2xl transition-all duration-500 flex items-center justify-center",
+                      isPlaying ? "scale-105 shadow-[0_0_40px_rgba(0,199,169,0.4)]" : "hover:scale-105 animate-bounce scale-110 shadow-secondary/20"
+                    )}
+                  >
+                    {isPlaying ? (
+                      <LucideIcons.Pause className="h-12 w-12 fill-current text-secondary-foreground" />
+                    ) : (
+                      <LucideIcons.Play className="h-12 w-12 fill-current text-secondary-foreground ml-2" />
+                    )}
+                  </Button>
+                </div>
+
+                {/* Track Info (NowPlaying) */}
+                <div className="relative w-full flex flex-col items-center space-y-2">
+                  <NowPlaying 
+                    useDynamic={siteConfig.useDynamicMetadata}
+                    metadataUrl={siteConfig.metadataUrl}
+                    staticText={siteConfig.nowPlayingText}
+                    className="text-center font-bold text-sm text-foreground not-italic max-w-[280px]"
                   />
                 </div>
-              </div>
-            )}
 
-            {siteConfig.showHeroIcon !== false && (
-              <div className="flex justify-center mb-8">
-                <div className="relative p-1 rounded-full bg-secondary/20 ring-1 ring-secondary/50">
-                  <Cross className="h-20 w-20 text-secondary" />
-                  <div className="absolute inset-0 blur-2xl bg-secondary/30 rounded-full -z-10" />
+                {/* Large visualizer bars */}
+                <div className="relative flex items-end justify-center gap-1.5 h-12 w-full px-4">
+                  {[...Array(15)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "w-1.5 bg-secondary rounded-full transition-all duration-300",
+                        isPlaying ? "hero-visualizer-bar" : "h-1"
+                      )}
+                      style={{
+                        animationDelay: isPlaying ? `${(i % 5) * 0.1}s` : '0s',
+                        animationDuration: `${0.5 + (i % 3) * 0.15}s`
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
-            )}
-
-            {siteConfig.showRadioName !== false && (
-              <h1 className="text-6xl md:text-9xl font-black font-headline mb-6 tracking-tighter text-foreground text-center">
-                {firstNamePart} <span className="text-secondary">{restNameParts}</span>
-              </h1>
-            )}
-
-            {siteConfig.showRadioSlogan !== false && (
-              <p className="text-xl md:text-2xl font-body text-muted-foreground uppercase tracking-[0.3em] mb-12 text-center">
-                {siteConfig.slogan}
-              </p>
-            )}
-            
-            <div className="flex flex-wrap justify-center gap-6">
-              {siteConfig.heroBadge1Text && siteConfig.showHeroBadge1 !== false && (
-                <Badge variant="outline" className="text-secondary border-secondary/50 px-6 py-2 text-sm backdrop-blur-md bg-secondary/5">
-                  <DynamicIcon name={siteConfig.heroBadge1Icon} className="h-4 w-4 mr-2" />
-                  {siteConfig.heroBadge1Text}
-                </Badge>
-              )}
-              {siteConfig.heroBadge2Text && siteConfig.showHeroBadge2 !== false && (
-                <Badge variant="outline" className="text-secondary border-secondary/50 px-6 py-2 text-sm backdrop-blur-md bg-secondary/5">
-                  <DynamicIcon name={siteConfig.heroBadge2Icon} className="h-4 w-4 mr-2" />
-                  {siteConfig.heroBadge2Text}
-                </Badge>
-              )}
             </div>
-          </div>
+          ) : (
+            <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-12 duration-1000 flex flex-col items-center">
+              {siteConfig.logoImageUrl && siteConfig.showRadioLogo !== false && (
+                <div className="flex justify-center mb-12">
+                  <div 
+                    className="relative transition-all duration-300"
+                    style={{ 
+                      width: `${siteConfig.logoSize || 320}px`, 
+                      height: `${siteConfig.logoSize || 320}px`,
+                      maxWidth: '100%' 
+                    }}
+                  >
+                    <Image 
+                      src={siteConfig.logoImageUrl}
+                      alt="Logo da Rádio"
+                      fill
+                      className="object-contain drop-shadow-2xl"
+                      priority
+                    />
+                  </div>
+                </div>
+              )}
+
+              {siteConfig.showHeroIcon !== false && (
+                <div className="flex justify-center mb-8">
+                  <div className="relative p-1 rounded-full bg-secondary/20 ring-1 ring-secondary/50">
+                    <Cross className="h-20 w-20 text-secondary" />
+                    <div className="absolute inset-0 blur-2xl bg-secondary/30 rounded-full -z-10" />
+                  </div>
+                </div>
+              )}
+
+              {siteConfig.showRadioName !== false && (
+                <h1 className="text-6xl md:text-9xl font-black font-headline mb-6 tracking-tighter text-foreground text-center">
+                  {firstNamePart} <span className="text-secondary">{restNameParts}</span>
+                </h1>
+              )}
+
+              {siteConfig.showRadioSlogan !== false && (
+                <p className="text-xl md:text-2xl font-body text-muted-foreground uppercase tracking-[0.3em] mb-12 text-center">
+                  {siteConfig.slogan}
+                </p>
+              )}
+              
+              <div className="flex flex-wrap justify-center gap-6">
+                {siteConfig.heroBadge1Text && siteConfig.showHeroBadge1 !== false && (
+                  <Badge variant="outline" className="text-secondary border-secondary/50 px-6 py-2 text-sm backdrop-blur-md bg-secondary/5">
+                    <DynamicIcon name={siteConfig.heroBadge1Icon} className="h-4 w-4 mr-2" />
+                    {siteConfig.heroBadge1Text}
+                  </Badge>
+                )}
+                {siteConfig.heroBadge2Text && siteConfig.showHeroBadge2 !== false && (
+                  <Badge variant="outline" className="text-secondary border-secondary/50 px-6 py-2 text-sm backdrop-blur-md bg-secondary/5">
+                    <DynamicIcon name={siteConfig.heroBadge2Icon} className="h-4 w-4 mr-2" />
+                    {siteConfig.heroBadge2Text}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
         </section>
 
-        <div className="max-w-7xl mx-auto w-full px-6 space-y-40 mb-32">
-          {/* About Section */}
-          {siteConfig.showAbout && (
-            <section id="sobre" className={cn(
-              "grid gap-20 items-center",
-              showAboutImageVisibility ? "md:grid-cols-2" : "grid-cols-1 max-w-4xl mx-auto text-center"
-            )}>
-              <div className="space-y-8 animate-in slide-in-from-left duration-700">
-                <div className="space-y-2">
-                  <span className="text-secondary font-bold tracking-widest uppercase text-sm">
-                    {siteConfig.aboutBadge || 'Nossa Identidade'}
-                  </span>
-                  <h2 className="text-5xl font-headline font-bold leading-tight">
-                    {siteConfig.aboutTitle || 'Levando Esperança através das Ondas'}
-                  </h2>
+        {(siteConfig.showAbout || (siteConfig.showProgramacao && programs && programs.length > 0) || siteConfig.showVersiculo) && (
+          <div className="max-w-7xl mx-auto w-full px-6 space-y-40 mb-32">
+            {/* About Section */}
+            {siteConfig.showAbout && (
+              <section id="sobre" className={cn(
+                "grid gap-20 items-center",
+                showAboutImageVisibility ? "md:grid-cols-2" : "grid-cols-1 max-w-4xl mx-auto text-center"
+              )}>
+                <div className="space-y-8 animate-in slide-in-from-left duration-700">
+                  <div className="space-y-2">
+                    <span className="text-secondary font-bold tracking-widest uppercase text-sm">
+                      {siteConfig.aboutBadge || 'Nossa Identidade'}
+                    </span>
+                    <h2 className="text-5xl font-headline font-bold leading-tight">
+                      {siteConfig.aboutTitle || 'Levando Esperança através das Ondas'}
+                    </h2>
+                  </div>
+                  <p className="text-xl leading-relaxed text-muted-foreground/90 font-light">
+                    {siteConfig.aboutText}
+                  </p>
                 </div>
-                <p className="text-xl leading-relaxed text-muted-foreground/90 font-light">
-                  {siteConfig.aboutText}
-                </p>
-              </div>
-              
-              {showAboutImageVisibility && (
-                <div className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl group animate-in slide-in-from-right duration-700">
-                  <Image 
-                    src={aboutImage}
-                    alt="Estúdio"
-                    fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    data-ai-hint={studioImg?.imageHint || "radio studio"}
-                  />
-                  <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl" />
+                
+                {showAboutImageVisibility && (
+                  <div className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl group animate-in slide-in-from-right duration-700">
+                    <Image 
+                      src={aboutImage}
+                      alt="Estúdio"
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-700"
+                      data-ai-hint={studioImg?.imageHint || "radio studio"}
+                    />
+                    <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl" />
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Schedule Section */}
+            {siteConfig.showProgramacao && programs && programs.length > 0 && (
+              <section id="programacao" className="space-y-16">
+                <div className="text-center space-y-4">
+                  <h2 className="text-5xl font-headline font-bold text-secondary">Programação Diária</h2>
+                  <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Momentos de edificação, louvor e palavra reservados para você sintonizar a sua fé.</p>
                 </div>
-              )}
-            </section>
-          )}
-
-          {/* Schedule Section */}
-          {siteConfig.showProgramacao && programs && programs.length > 0 && (
-            <section id="programacao" className="space-y-16">
-              <div className="text-center space-y-4">
-                <h2 className="text-5xl font-headline font-bold text-secondary">Programação Diária</h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Momentos de edificação, louvor e palavra reservados para você sintonizar a sua fé.</p>
-              </div>
-              
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {programs.map((prog, idx) => (
-                  <Card key={prog.id} className="border-border teal-glass hover:border-secondary/50 transition-all duration-500 group animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: `${idx * 100}ms` }}>
-                    <CardContent className="p-8 space-y-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-3xl font-black text-secondary/30 group-hover:text-secondary transition-colors duration-500">{prog.horario}</span>
-                        <div className="p-2 rounded-lg bg-secondary/10 text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Clock className="h-5 w-5" />
+                
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {programs.map((prog, idx) => (
+                    <Card key={prog.id} className="border-border teal-glass hover:border-secondary/50 transition-all duration-500 group animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: `${idx * 100}ms` }}>
+                      <CardContent className="p-8 space-y-6">
+                        <div className="flex justify-between items-center">
+                          <span className="text-3xl font-black text-secondary/30 group-hover:text-secondary transition-colors duration-500">{prog.horario}</span>
+                          <div className="p-2 rounded-lg bg-secondary/10 text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Clock className="h-5 w-5" />
+                          </div>
                         </div>
-                      </div>
-                      <div className="space-y-3">
-                        <h3 className="text-2xl font-headline font-bold">{prog.name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider">
-                          <User className="h-4 w-4" />
-                          <span>{prog.presenter}</span>
+                        <div className="space-y-3">
+                          <h3 className="text-2xl font-headline font-bold">{prog.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider">
+                            <User className="h-4 w-4" />
+                            <span>{prog.presenter}</span>
+                          </div>
+                          <p className="text-muted-foreground leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-500">
+                            {prog.description}
+                          </p>
                         </div>
-                        <p className="text-muted-foreground leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-500">
-                          {prog.description}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
 
-          {/* Verse of the day */}
-          {siteConfig.showVersiculo && (
-            <section className="relative py-24 px-8 text-center bg-secondary/5 rounded-[3rem] border border-secondary/20 overflow-hidden group shadow-[inset_0_0_100px_rgba(38,70,83,0.05)]">
-               <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-                 <div className="inline-block p-4 rounded-full bg-secondary/10 animate-bounce">
-                    <Music className="h-8 w-8 text-secondary" />
+            {/* Verse of the day */}
+            {siteConfig.showVersiculo && (
+              <section className="relative py-24 px-8 text-center bg-secondary/5 rounded-[3rem] border border-secondary/20 overflow-hidden group shadow-[inset_0_0_100px_rgba(38,70,83,0.05)]">
+                 <div className="relative z-10 max-w-3xl mx-auto space-y-8">
+                   <div className="inline-block p-4 rounded-full bg-secondary/10 animate-bounce">
+                      <Music className="h-8 w-8 text-secondary" />
+                   </div>
+                   <h3 className="text-3xl md:text-4xl font-headline italic leading-relaxed drop-shadow-lg">
+                    {selectedVerse || siteConfig.verseText}
+                   </h3>
+                   <div className="h-1 w-24 bg-secondary mx-auto rounded-full" />
                  </div>
-                 <h3 className="text-3xl md:text-4xl font-headline italic leading-relaxed drop-shadow-lg">
-                  {siteConfig.verseText}
-                 </h3>
-                 <div className="h-1 w-24 bg-secondary mx-auto rounded-full" />
-               </div>
-            </section>
-          )}
-        </div>
+              </section>
+            )}
+          </div>
+        )}
 
         {/* Footer */}
         {siteConfig.showFooter !== false && (

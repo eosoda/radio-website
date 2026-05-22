@@ -80,7 +80,7 @@ export default function LoginPage() {
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-secondary hover:bg-secondary/90 text-primary-foreground font-bold" 
+              className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-bold" 
               disabled={isLoading}
             >
               {isLoading ? "Entrando..." : "Entrar no Painel"}

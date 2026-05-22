@@ -143,7 +143,7 @@ export default function AudioPlayer() {
             "h-12 w-12 rounded-full flex items-center justify-center bg-primary shrink-0 transition-all duration-500",
             isPlaying && "animate-pulse shadow-[0_0_20px_rgba(42,157,143,0.6)]"
           )}>
-            <Radio className="text-secondary h-6 w-6" />
+            <Radio className="text-primary-foreground h-6 w-6" />
           </div>
           <div className="min-w-0">
             <h4 className="font-headline text-secondary text-sm md:text-base truncate">
@@ -212,7 +212,7 @@ export default function AudioPlayer() {
             size="icon" 
             onClick={() => setIsPlaying(!isPlaying)}
             className={cn(
-              "h-14 w-14 md:h-16 md:w-16 rounded-full bg-secondary hover:bg-secondary/90 text-primary-foreground shadow-xl transition-all duration-300",
+              "h-14 w-14 md:h-16 md:w-16 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-xl transition-all duration-300",
               isPlaying ? "hover:scale-105" : "animate-bounce scale-110 shadow-secondary/50"
             )}
           >

@@ -15,6 +15,8 @@
     --primary-foreground: 210 20% 98%;
     --secondary: 171 100% 28%; /* Tiffany Escurecido para Contraste no Light Mode */
     --secondary-foreground: 210 20% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
     --muted: 210 10% 90%;
     --muted-foreground: 197 20% 40%;
     --accent: 171 100% 28%;
@@ -115,4 +117,59 @@
   display: inline-block;
   white-space: nowrap;
   animation: marquee 15s linear infinite;
+}
+
+@keyframes hero-bar-grow {
+  0%, 100% { height: 6px; }
+  50% { height: 48px; }
+}
+
+.hero-visualizer-bar {
+  animation: hero-bar-grow 1s ease-in-out infinite;
+}
+
+/* Light mode specific accessibility fixes for borders & translucent backgrounds */
+.light {
+  .border-white\/5 {
+    border-color: rgba(15, 30, 36, 0.07) !important;
+  }
+  .border-white\/10 {
+    border-color: rgba(15, 30, 36, 0.12) !important;
+  }
+  .border-white\/20 {
+    border-color: rgba(15, 30, 36, 0.18) !important;
+  }
+  .border-r-white\/10 {
+    border-right-color: rgba(15, 30, 36, 0.12) !important;
+  }
+  .border-b-white\/5 {
+    border-bottom-color: rgba(15, 30, 36, 0.07) !important;
+  }
+  .border-t-white\/5 {
+    border-top-color: rgba(15, 30, 36, 0.07) !important;
+  }
+  .border-t-white\/10 {
+    border-top-color: rgba(15, 30, 36, 0.12) !important;
+  }
+  .ring-white\/10 {
+    --tw-ring-color: rgba(15, 30, 36, 0.12) !important;
+  }
+  .hover\:bg-white\/5:hover {
+    background-color: rgba(15, 30, 36, 0.04) !important;
+  }
+  .bg-background\/50 {
+    background-color: #ffffff !important;
+  }
+  .bg-background\/40 {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+  }
+  .bg-background\/30 {
+    background-color: rgba(255, 255, 255, 0.4) !important;
+  }
+  .bg-card\/30 {
+    background-color: rgba(255, 255, 255, 0.5) !important;
+  }
+  .bg-card\/50 {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+  }
 }
