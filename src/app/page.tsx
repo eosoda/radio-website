@@ -1,243 +1,119 @@
-
-"use client"
-
-import React, { useEffect, useState, useMemo } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import * as LucideIcons from 'lucide-react';
 import { 
   Cross, 
-  Instagram, 
-  Facebook, 
-  Youtube, 
   Clock, 
   User, 
-  Music, 
-  Radio, 
   ChevronRight, 
-  Moon, 
-  Sun,
-  Monitor,
   Hammer,
-  Sparkles,
-  Megaphone,
-  ArrowRight
+  Sparkles
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
-import { Slider } from '@/components/ui/slider';
-import { useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, collection } from 'firebase/firestore';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useAudioStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import NowPlaying from '@/components/NowPlaying';
+import { getServerConfig, getServerPrograms } from '@/firebase/server';
 
-/**
- * Componente para renderizar dinamicamente um ícone da Lucide
- */
+// Client Components
+import DynamicNoticeBar from '@/components/DynamicNoticeBar';
+import DynamicVerse from '@/components/DynamicVerse';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
+import HeroPlayerCard from '@/components/HeroPlayerCard';
+
 const DynamicIcon = ({ name, className }: { name?: string, className?: string }) => {
   if (!name) return null;
   const IconComponent = (LucideIcons as any)[name];
   return IconComponent ? <IconComponent className={className} /> : null;
 };
 
-export default function Home() {
-  const db = useFirestore();
-  const { 
-    theme, 
-    setTheme, 
-    isPlaying, 
-    setIsPlaying,
-    volume,
-    setVolume,
-    isMuted,
-    setIsMuted
-  } = useAudioStore();
-  const [mounted, setMounted] = useState(false);
-  const [activeNotices, setActiveNotices] = useState<any[]>([]);
-  const [currentNoticeIndex, setCurrentNoticeIndex] = useState(0);
-  const [selectedVerse, setSelectedVerse] = useState('');
-  const [prevVersesListStr, setPrevVersesListStr] = useState('');
+// Revalidate this page every 60 seconds (ISR)
+export const revalidate = 60;
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export default async function Home() {
+  const config = await getServerConfig();
+  const programs = await getServerPrograms();
 
-  // Config data
-  const configRef = useMemoFirebase(() => doc(db, 'config', 'main'), [db]);
-  const { data: config, isLoading: isConfigLoading } = useDoc(configRef);
-
-  // Programs data
-  const programsRef = useMemoFirebase(() => collection(db, 'programs'), [db]);
-  const { data: programs, isLoading: isProgramsLoading } = useCollection(programsRef);
-
-  const siteConfig = useMemo(() => {
-    return {
-      appName: config?.appName || 'Rádio Maranata',
-      slogan: config?.slogan || 'A voz da esperança 24h',
-      logoImageUrl: config?.logoImageUrl || '',
-      logoSize: config?.logoSize !== undefined ? config.logoSize : 320,
-      showRadioName: config?.showRadioName !== false,
-      showRadioSlogan: config?.showRadioSlogan !== false,
-      showHeroIcon: config?.showHeroIcon !== false,
-      showRadioLogo: config?.showRadioLogo !== false,
-      showHeroBadge1: config?.showHeroBadge1 !== false,
-      showHeroBadge2: config?.showHeroBadge2 !== false,
-      maintenanceMode: config?.maintenanceMode === true,
-      showAboutImage: config?.showAboutImage !== false,
-      showNoticeBar: config?.showNoticeBar === true,
-      noticeBarFixed: config?.noticeBarFixed === true,
-      noticeBarText: config?.noticeBarText || '',
-      noticeBarIcon: config?.noticeBarIcon || 'Megaphone',
-      noticeBarExpiresAt: config?.noticeBarExpiresAt || '',
-      noticeBarLinkText: config?.noticeBarLinkText || '',
-      noticeBarLinkUrl: config?.noticeBarLinkUrl || '',
-      heroBackgroundImageUrl: config?.heroBackgroundImageUrl || '',
-      showHeroBackground: config?.showHeroBackground !== false,
-      heroBgOpacity: config?.heroBgOpacity !== undefined ? config.heroBgOpacity : 0.2,
-      heroOverlayOpacity: config?.heroOverlayOpacity !== undefined ? config.heroOverlayOpacity : 0.6,
-      heroLayout: config?.heroLayout || 'classic',
-      noticesList: config?.noticesList || [],
-      aboutImageUrl: config?.aboutImageUrl || '',
-      heroBadge1Text: config?.heroBadge1Text || 'AO VIVO 24H',
-      heroBadge1Icon: config?.heroBadge1Icon || 'Clock',
-      heroBadge2Text: config?.heroBadge2Text || 'LOUVOR & ADORAÇÃO',
-      heroBadge2Icon: config?.heroBadge2Icon || 'Music',
-      aboutBadge: config?.aboutBadge || 'Nossa Identidade',
-      aboutTitle: config?.aboutTitle || 'Levando Esperança através das Ondas',
-      aboutText: config?.aboutText || 'Levando a palavra de Deus a todos os lares através do louvor e da edificação espiritual.',
-      verseText: config?.verseText || '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
-      versesList: config?.versesList || [
-        '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
-        '"Porque Deus tanto amou o mundo que deu o seu Filho Unigênito, para que todo o que nele crer não pereça, mas tenha a vida eterna." - João 3:16',
-        '"O Senhor é o meu pastor, nada me faltará." - Salmos 23:1',
-        '"Tudo posso naquele que me fortalece." - Filipenses 4:13',
-        '"Não fui eu que ordenei a você? Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar." - Josué 1:9'
-      ],
-      verseInterval: config?.verseInterval !== undefined ? config.verseInterval : 10,
-      verseFontSize: config?.verseFontSize || 'text-3xl md:text-4xl',
-      verseFontFamily: config?.verseFontFamily || 'font-headline',
-      verseAlign: config?.verseAlign || 'text-center',
-      verseTextColor: config?.verseTextColor || '',
-      verseBgOpacity: config?.verseBgOpacity !== undefined ? config.verseBgOpacity : 5,
-      showAbout: config?.showAbout !== false,
-      showProgramacao: config?.showProgramacao !== false,
-      showVersiculo: config?.showVersiculo !== false,
-      showNowPlaying: config?.showNowPlaying !== false,
-      showFooter: config?.showFooter !== false,
-      showFooterDescription: config?.showFooterDescription !== false,
-      footerDescription: config?.footerDescription || 'Levando o evangelho através das ondas sonoras. Uma rádio comprometida com a verdade bíblica e o amor de Cristo para todos os lares.',
-      footerStatusText: config?.footerStatusText || 'Transmitindo Esperança 24h',
-      footerStatusIcon: config?.footerStatusIcon || 'Radio',
-      showSocial: config?.showSocial !== false,
-      showInstagram: config?.showInstagram !== false,
-      showFacebook: config?.showFacebook !== false,
-      showYoutube: config?.showYoutube !== false,
-      showUsefulLinks: config?.showUsefulLinks !== false,
-      showContact: config?.showContact !== false,
-      copyrightText: config?.copyrightText || 'Rádio Maranata - Todos os direitos reservados.',
-      socialMediaLinks: config?.socialMediaLinks || [],
-      usefulLinks: config?.usefulLinks || [],
-      useDynamicMetadata: config?.useDynamicMetadata === true,
-      metadataUrl: config?.metadataUrl || '',
-      nowPlayingText: config?.nowPlayingText || 'Sintonizando Rádio Maranata...'
-    };
-  }, [config]);
-
-  const noticesListStr = JSON.stringify(siteConfig.noticesList);
-  const versesListStr = JSON.stringify(siteConfig.versesList);
-
-  // Seleciona um versículo aleatório durante a renderização para evitar flashes/layout shift
-  if (mounted && versesListStr !== prevVersesListStr) {
-    const list = siteConfig.versesList || [];
-    let chosen = '';
-    if (list.length > 0) {
-      const randomIndex = Math.floor(Math.random() * list.length);
-      chosen = list[randomIndex];
-    } else if (siteConfig.verseText) {
-      chosen = siteConfig.verseText;
-    } else {
-      chosen = '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105';
-    }
-    setPrevVersesListStr(versesListStr);
-    setSelectedVerse(chosen);
-  }
-
-  // Efeito para alternar versículos
-  useEffect(() => {
-    if (!mounted || !siteConfig.showVersiculo || siteConfig.verseInterval === 0 || !siteConfig.versesList || siteConfig.versesList.length <= 1) return;
-    
-    const interval = setInterval(() => {
-      setSelectedVerse(current => {
-        const list = siteConfig.versesList;
-        const currentIndex = list.indexOf(current);
-        const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % list.length;
-        return list[nextIndex];
-      });
-    }, siteConfig.verseInterval * 1000);
-    
-    return () => clearInterval(interval);
-  }, [mounted, siteConfig.showVersiculo, siteConfig.verseInterval, versesListStr]);
-
-  // Efeito para validar e filtrar avisos ativos apenas no cliente
-  useEffect(() => {
-    if (mounted && siteConfig.showNoticeBar) {
-      const now = new Date();
-      let list: any[] = [];
-      
-      if (siteConfig.noticesList && siteConfig.noticesList.length > 0) {
-        list = siteConfig.noticesList.filter((notice: any) => {
-          if (!notice.text) return false;
-          if (!notice.expiresAt) return true;
-          return new Date(notice.expiresAt) > now;
-        });
-      } else if (siteConfig.noticeBarText) {
-        const isNoticeExpired = siteConfig.noticeBarExpiresAt && new Date(siteConfig.noticeBarExpiresAt) < now;
-        if (!isNoticeExpired) {
-          list = [{
-            id: 'legacy',
-            text: siteConfig.noticeBarText,
-            icon: siteConfig.noticeBarIcon || 'Megaphone',
-            linkText: siteConfig.noticeBarLinkText,
-            linkUrl: siteConfig.noticeBarLinkUrl
-          }];
-        }
-      }
-      
-      setActiveNotices(list);
-      setCurrentNoticeIndex(0);
-    } else {
-      setActiveNotices([]);
-    }
-  }, [mounted, siteConfig.showNoticeBar, noticesListStr, siteConfig.noticeBarText, siteConfig.noticeBarExpiresAt, siteConfig.noticeBarIcon, siteConfig.noticeBarLinkText, siteConfig.noticeBarLinkUrl]);
-
-  // Efeito para rodar o carrossel de avisos a cada 5 segundos
-  useEffect(() => {
-    if (activeNotices.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentNoticeIndex((prevIndex) => (prevIndex + 1) % activeNotices.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [activeNotices]);
-
+  const siteConfig = {
+    appName: config?.appName || 'Rádio Maranata',
+    slogan: config?.slogan || 'A voz da esperança 24h',
+    logoImageUrl: config?.logoImageUrl || '',
+    logoSize: config?.logoSize !== undefined ? config.logoSize : 320,
+    showRadioName: config?.showRadioName !== false,
+    showRadioSlogan: config?.showRadioSlogan !== false,
+    showHeroIcon: config?.showHeroIcon !== false,
+    showRadioLogo: config?.showRadioLogo !== false,
+    showHeroBadge1: config?.showHeroBadge1 !== false,
+    showHeroBadge2: config?.showHeroBadge2 !== false,
+    maintenanceMode: config?.maintenanceMode === true,
+    showAboutImage: config?.showAboutImage !== false,
+    showNoticeBar: config?.showNoticeBar === true,
+    noticeBarFixed: config?.noticeBarFixed === true,
+    noticeBarText: config?.noticeBarText || '',
+    noticeBarIcon: config?.noticeBarIcon || 'Megaphone',
+    noticeBarExpiresAt: config?.noticeBarExpiresAt || '',
+    noticeBarLinkText: config?.noticeBarLinkText || '',
+    noticeBarLinkUrl: config?.noticeBarLinkUrl || '',
+    heroBackgroundImageUrl: config?.heroBackgroundImageUrl || '',
+    showHeroBackground: config?.showHeroBackground !== false,
+    heroBgOpacity: config?.heroBgOpacity !== undefined ? config.heroBgOpacity : 0.2,
+    heroOverlayOpacity: config?.heroOverlayOpacity !== undefined ? config.heroOverlayOpacity : 0.6,
+    heroLayout: config?.heroLayout || 'classic',
+    noticesList: config?.noticesList || [],
+    aboutImageUrl: config?.aboutImageUrl || '',
+    heroBadge1Text: config?.heroBadge1Text || 'AO VIVO 24H',
+    heroBadge1Icon: config?.heroBadge1Icon || 'Clock',
+    heroBadge2Text: config?.heroBadge2Text || 'LOUVOR & ADORAÇÃO',
+    heroBadge2Icon: config?.heroBadge2Icon || 'Music',
+    aboutBadge: config?.aboutBadge || 'Nossa Identidade',
+    aboutTitle: config?.aboutTitle || 'Levando Esperança através das Ondas',
+    aboutText: config?.aboutText || 'Levando a palavra de Deus a todos os lares através do louvor e da edificação espiritual.',
+    verseText: config?.verseText || '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
+    versesList: config?.versesList || [
+      '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
+      '"Porque Deus tanto amou o mundo que deu o seu Filho Unigênito, para que todo o que nele crer não pereça, mas tenha a vida eterna." - João 3:16',
+      '"O Senhor é o meu pastor, nada me faltará." - Salmos 23:1',
+      '"Tudo posso naquele que me fortalece." - Filipenses 4:13',
+      '"Não fui eu que ordenei a você? Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar." - Josué 1:9'
+    ],
+    verseInterval: config?.verseInterval !== undefined ? config.verseInterval : 10,
+    verseFontSize: config?.verseFontSize || 'text-3xl md:text-4xl',
+    verseFontFamily: config?.verseFontFamily || 'font-headline',
+    verseAlign: config?.verseAlign || 'text-center',
+    verseTextColor: config?.verseTextColor || '',
+    verseBgOpacity: config?.verseBgOpacity !== undefined ? config.verseBgOpacity : 5,
+    verseBoxWidth: config?.verseBoxWidth || 'max-w-4xl',
+    verseBoxPadding: config?.verseBoxPadding || 'py-24 px-8',
+    verseBoxRadius: config?.verseBoxRadius || 'rounded-[3rem]',
+    verseBgColor: config?.verseBgColor || '',
+    verseIcon: config?.verseIcon || 'Music',
+    verseBorderWidth: config?.verseBorderWidth || 'border',
+    verseBorderColor: config?.verseBorderColor || '',
+    showAbout: config?.showAbout !== false,
+    showProgramacao: config?.showProgramacao !== false,
+    showVersiculo: config?.showVersiculo !== false,
+    showNowPlaying: config?.showNowPlaying !== false,
+    showFooter: config?.showFooter !== false,
+    showFooterDescription: config?.showFooterDescription !== false,
+    footerDescription: config?.footerDescription || 'Levando o evangelho através das ondas sonoras. Uma rádio comprometida com a verdade bíblica e o amor de Cristo para todos os lares.',
+    footerStatusText: config?.footerStatusText || 'Transmitindo Esperança 24h',
+    footerStatusIcon: config?.footerStatusIcon || 'Radio',
+    showSocial: config?.showSocial !== false,
+    showInstagram: config?.showInstagram !== false,
+    showFacebook: config?.showFacebook !== false,
+    showYoutube: config?.showYoutube !== false,
+    showUsefulLinks: config?.showUsefulLinks !== false,
+    showContact: config?.showContact !== false,
+    copyrightText: config?.copyrightText || 'Rádio Maranata - Todos os direitos reservados.',
+    socialMediaLinks: config?.socialMediaLinks || [],
+    usefulLinks: config?.usefulLinks || [],
+    useDynamicMetadata: config?.useDynamicMetadata === true,
+    metadataUrl: config?.metadataUrl || '',
+    nowPlayingText: config?.nowPlayingText || 'Sintonizando Rádio Maranata...'
+  };
 
   const worshipImg = PlaceHolderImages.find(img => img.id === 'gospel-worship');
   const studioImg = PlaceHolderImages.find(img => img.id === 'radio-studio');
-
-  if (isConfigLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Radio className="h-12 w-12 text-secondary animate-pulse" />
-      </div>
-    );
-  }
 
   // Modo de Manutenção
   if (siteConfig.maintenanceMode) {
@@ -284,66 +160,48 @@ export default function Home() {
   const aboutImage = siteConfig.aboutImageUrl || studioImg?.imageUrl || "https://picsum.photos/seed/radio1/600/400";
   const showAboutImageVisibility = siteConfig.showAboutImage !== false;
 
+  // Lógica para destacar programa "No Ar" usando hora do servidor
+  const getCurrentServerProgramId = () => {
+    if (!programs || programs.length === 0) return null;
+    const now = new Date();
+    const brazilTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
+    const currentMinutes = brazilTime.getHours() * 60 + brazilTime.getMinutes();
+
+    let currentProgId = null;
+    for (let i = 0; i < programs.length; i++) {
+      const prog = programs[i];
+      const [h, m] = prog.horario.split(':').map(Number);
+      const progMinutes = h * 60 + m;
+      
+      if (currentMinutes >= progMinutes) {
+        currentProgId = prog.id;
+      }
+    }
+    if (!currentProgId && programs.length > 0) {
+      currentProgId = programs[programs.length - 1].id;
+    }
+    return currentProgId;
+  };
+  const activeProgramId = getCurrentServerProgramId();
+
   return (
     <div className="flex flex-col w-full min-h-screen">
-      {/* Barra de Avisos Importantes */}
-      {activeNotices.length > 0 && (
-        <div className={cn(
-          "bg-secondary text-secondary-foreground py-2.5 px-4 text-center text-[10px] md:text-xs font-bold uppercase tracking-widest z-[60]",
-          siteConfig.noticeBarFixed && "sticky top-0 shadow-lg"
-        )}>
-          <div 
-            key={activeNotices[currentNoticeIndex]?.id || currentNoticeIndex}
-            className="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-x-3 gap-y-1 animate-in fade-in duration-500"
-          >
-            <div className="flex items-center gap-2">
-              <DynamicIcon name={activeNotices[currentNoticeIndex]?.icon || 'Megaphone'} className="h-3 w-3 md:h-4 md:w-4" />
-              <span>{activeNotices[currentNoticeIndex]?.text}</span>
-            </div>
-            {activeNotices[currentNoticeIndex]?.linkText && activeNotices[currentNoticeIndex]?.linkUrl && (
-              <a 
-                href={activeNotices[currentNoticeIndex]?.linkUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-foreground/10 hover:bg-secondary-foreground/20 transition-colors border border-secondary-foreground/20 text-[9px] md:text-[11px]"
-              >
-                {activeNotices[currentNoticeIndex]?.linkText}
-                <ArrowRight className="h-3 w-3" />
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Barra de Avisos Importantes (Client Component) */}
+      <DynamicNoticeBar 
+        showNoticeBar={siteConfig.showNoticeBar}
+        noticeBarFixed={siteConfig.noticeBarFixed}
+        noticesList={siteConfig.noticesList}
+        noticeBarText={siteConfig.noticeBarText}
+        noticeBarIcon={siteConfig.noticeBarIcon}
+        noticeBarExpiresAt={siteConfig.noticeBarExpiresAt}
+        noticeBarLinkText={siteConfig.noticeBarLinkText}
+        noticeBarLinkUrl={siteConfig.noticeBarLinkUrl}
+      />
 
       {/* Container Principal */}
       <div className="relative flex flex-col flex-1 w-full">
-        {/* Seletor de Tema Dropdown */}
-        {mounted && (
-          <div className="absolute top-6 right-6 z-50">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full w-12 h-12 bg-background/50 backdrop-blur-md border-secondary/30 text-secondary hover:bg-secondary hover:text-background transition-all shadow-xl"
-                >
-                  {theme === 'dark' ? <Moon className="h-5 w-5" /> : theme === 'light' ? <Sun className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background/90 backdrop-blur-lg border-secondary/20">
-                <DropdownMenuItem onClick={() => setTheme('light')} className="gap-2 cursor-pointer focus:bg-secondary focus:text-background">
-                  <Sun className="h-4 w-4" /> Claro
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('dark')} className="gap-2 cursor-pointer focus:bg-secondary focus:text-background">
-                  <Moon className="h-4 w-4" /> Escuro
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme('system')} className="gap-2 cursor-pointer focus:bg-secondary focus:text-background">
-                  <Monitor className="h-4 w-4" /> Sistema
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
+        {/* Seletor de Tema Dropdown (Client Component) */}
+        <ThemeSwitcher />
 
         {/* Hero Section */}
         <section className="relative h-[85vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden">
@@ -356,7 +214,6 @@ export default function Home() {
                 style={{ opacity: siteConfig.heroBgOpacity }}
                 className="object-cover scale-105"
                 priority
-                data-ai-hint={worshipImg?.imageHint || "worship gospel"}
               />
               <div 
                 style={{ opacity: siteConfig.heroOverlayOpacity }}
@@ -423,162 +280,15 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Coluna da Direita: Glassmorphic Player Card com Controle de Volume */}
+              {/* Coluna da Direita: Glassmorphic Player Card com Controle de Volume (Client Component) */}
               <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto">
-                <div className="w-full p-8 rounded-[2.5rem] border border-secondary/20 bg-background/40 backdrop-blur-xl shadow-2xl flex flex-col items-center space-y-6 relative overflow-hidden group">
-                  {/* Glow effect */}
-                  <div className={cn(
-                    "absolute -inset-10 bg-secondary/10 rounded-full blur-3xl transition-opacity duration-1000",
-                    isPlaying ? "opacity-100 animate-pulse" : "opacity-0"
-                  )} />
-                  
-                  {/* Header info */}
-                  <div className="relative text-center space-y-1">
-                    <span className="text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary/10 px-3 py-1 rounded-full">
-                      NO AR
-                    </span>
-                    <h2 className="text-2xl font-headline font-bold text-foreground pt-3">{siteConfig.appName}</h2>
-                    <p className="text-xs text-muted-foreground font-light">{siteConfig.slogan}</p>
-                  </div>
-
-                  {/* Big Play/Pause Button */}
-                  <div className="relative">
-                    <Button
-                      onClick={() => setIsPlaying(!isPlaying)}
-                      className={cn(
-                        "h-24 w-24 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-2xl transition-all duration-500 flex items-center justify-center",
-                        isPlaying ? "scale-105 shadow-[0_0_40px_rgba(0,199,169,0.4)]" : "hover:scale-105 animate-bounce scale-110 shadow-secondary/20"
-                      )}
-                    >
-                      {isPlaying ? (
-                        <LucideIcons.Pause className="h-10 w-10 fill-current text-secondary-foreground" />
-                      ) : (
-                        <LucideIcons.Play className="h-10 w-10 fill-current text-secondary-foreground ml-1" />
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Track Info (NowPlaying) */}
-                  <div className="relative w-full flex flex-col items-center space-y-2">
-                    <NowPlaying 
-                      useDynamic={siteConfig.useDynamicMetadata}
-                      metadataUrl={siteConfig.metadataUrl}
-                      staticText={siteConfig.nowPlayingText}
-                      className="text-center font-bold text-sm text-foreground not-italic max-w-[280px]"
-                    />
-                  </div>
-
-                  {/* Volume control */}
-                  <div className="relative w-full flex items-center gap-3 px-2 pt-2 border-t border-white/5">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={() => setIsMuted(!isMuted)} 
-                      className="text-muted-foreground hover:bg-secondary hover:text-secondary-foreground group h-8 w-8 rounded-full"
-                    >
-                      {isMuted || volume === 0 ? (
-                        <LucideIcons.VolumeX className="h-4 w-4 group-hover:text-secondary-foreground" />
-                      ) : (
-                        <LucideIcons.Volume2 className="h-4 w-4 group-hover:text-secondary-foreground" />
-                      )}
-                    </Button>
-                    <Slider 
-                      value={[volume * 100]} 
-                      max={100} 
-                      step={1} 
-                      onValueChange={(v) => {
-                        setVolume(v[0] / 100);
-                        if (v[0] > 0) setIsMuted(false);
-                      }}
-                      className="flex-1 cursor-pointer"
-                    />
-                    <span className="text-[10px] font-bold text-secondary w-8 text-right tabular-nums">
-                      {Math.round(volume * 100)}%
-                    </span>
-                  </div>
-
-                  {/* Large visualizer bars */}
-                  <div className="relative flex items-end justify-center gap-1.5 h-10 w-full px-4">
-                    {[...Array(15)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          "w-1.5 bg-secondary rounded-full transition-all duration-300",
-                          isPlaying ? "hero-visualizer-bar" : "h-1"
-                        )}
-                        style={{
-                          animationDelay: isPlaying ? `${(i % 5) * 0.1}s` : '0s',
-                          animationDuration: `${0.5 + (i % 3) * 0.15}s`
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
+                <HeroPlayerCard siteConfig={siteConfig} isCleanLayout={false} />
               </div>
             </div>
           ) : siteConfig.heroLayout === 'clean' ? (
             <div className="relative z-10 max-w-md w-full animate-in fade-in slide-in-from-bottom-12 duration-1000 flex flex-col items-center">
-              {/* Glassmorphic Player Card */}
-              <div className="w-full p-8 rounded-[2.5rem] border border-secondary/20 bg-background/40 backdrop-blur-xl shadow-2xl flex flex-col items-center space-y-8 relative overflow-hidden group">
-                {/* Glow effect */}
-                <div className={cn(
-                  "absolute -inset-10 bg-secondary/10 rounded-full blur-3xl transition-opacity duration-1000",
-                  isPlaying ? "opacity-100 animate-pulse" : "opacity-0"
-                )} />
-                
-                {/* Header info */}
-                <div className="relative text-center space-y-1">
-                  <span className="text-[10px] font-bold text-secondary uppercase tracking-widest bg-secondary/10 px-3 py-1 rounded-full">
-                    NO AR
-                  </span>
-                  <h2 className="text-2xl font-headline font-bold text-foreground pt-3">{siteConfig.appName}</h2>
-                  <p className="text-xs text-muted-foreground font-light">{siteConfig.slogan}</p>
-                </div>
-
-                {/* Big Play/Pause Button */}
-                <div className="relative">
-                  <Button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className={cn(
-                      "h-28 w-28 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-2xl transition-all duration-500 flex items-center justify-center",
-                      isPlaying ? "scale-105 shadow-[0_0_40px_rgba(0,199,169,0.4)]" : "hover:scale-105 animate-bounce scale-110 shadow-secondary/20"
-                    )}
-                  >
-                    {isPlaying ? (
-                      <LucideIcons.Pause className="h-12 w-12 fill-current text-secondary-foreground" />
-                    ) : (
-                      <LucideIcons.Play className="h-12 w-12 fill-current text-secondary-foreground ml-2" />
-                    )}
-                  </Button>
-                </div>
-
-                {/* Track Info (NowPlaying) */}
-                <div className="relative w-full flex flex-col items-center space-y-2">
-                  <NowPlaying 
-                    useDynamic={siteConfig.useDynamicMetadata}
-                    metadataUrl={siteConfig.metadataUrl}
-                    staticText={siteConfig.nowPlayingText}
-                    className="text-center font-bold text-sm text-foreground not-italic max-w-[280px]"
-                  />
-                </div>
-
-                {/* Large visualizer bars */}
-                <div className="relative flex items-end justify-center gap-1.5 h-12 w-full px-4">
-                  {[...Array(15)].map((_, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "w-1.5 bg-secondary rounded-full transition-all duration-300",
-                        isPlaying ? "hero-visualizer-bar" : "h-1"
-                      )}
-                      style={{
-                        animationDelay: isPlaying ? `${(i % 5) * 0.1}s` : '0s',
-                        animationDuration: `${0.5 + (i % 3) * 0.15}s`
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
+              {/* Glassmorphic Player Card (Client Component) */}
+              <HeroPlayerCard siteConfig={siteConfig} isCleanLayout={true} />
             </div>
           ) : (
             <div className="relative z-10 max-w-4xl animate-in fade-in slide-in-from-bottom-12 duration-1000 flex flex-col items-center">
@@ -671,7 +381,6 @@ export default function Home() {
                       alt="Estúdio"
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-700"
-                      data-ai-hint={studioImg?.imageHint || "radio studio"}
                     />
                     <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl" />
                   </div>
@@ -688,81 +397,74 @@ export default function Home() {
                 </div>
                 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {programs.map((prog, idx) => (
-                    <Card key={prog.id} className="border-border teal-glass hover:border-secondary/50 transition-all duration-500 group animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: `${idx * 100}ms` }}>
-                      <CardContent className="p-8 space-y-6">
-                        <div className="flex justify-between items-center">
-                          <span className="text-3xl font-black text-secondary/30 group-hover:text-secondary transition-colors duration-500">{prog.horario}</span>
-                          <div className="p-2 rounded-lg bg-secondary/10 text-secondary opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Clock className="h-5 w-5" />
+                  {programs.map((prog, idx) => {
+                    const isLive = prog.id === activeProgramId;
+                    return (
+                      <Card key={prog.id} className={cn(
+                        "transition-all duration-500 group animate-in fade-in slide-in-from-bottom-4 relative overflow-hidden",
+                        isLive ? "border-secondary/50 bg-secondary/5 ring-1 ring-secondary/20" : "border-border teal-glass hover:border-secondary/50"
+                      )} style={{ animationDelay: `${idx * 100}ms` }}>
+                        {isLive && (
+                          <div className="absolute top-0 right-0 p-4 z-10 flex items-center gap-1.5">
+                            <span className="relative flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary"></span>
+                            </span>
+                            <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">No Ar</span>
                           </div>
-                        </div>
-                        <div className="space-y-3">
-                          <h3 className="text-2xl font-headline font-bold">{prog.name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider">
-                            <User className="h-4 w-4" />
-                            <span>{prog.presenter}</span>
+                        )}
+                        <CardContent className="p-8 space-y-6 relative z-0">
+                          <div className="flex justify-between items-center">
+                            <span className={cn(
+                              "text-3xl font-black transition-colors duration-500",
+                              isLive ? "text-secondary" : "text-secondary/30 group-hover:text-secondary"
+                            )}>
+                              {prog.horario}
+                            </span>
+                            <div className={cn(
+                              "p-2 rounded-lg transition-opacity",
+                              isLive ? "bg-secondary/20 text-secondary opacity-100" : "bg-secondary/10 text-secondary opacity-0 group-hover:opacity-100"
+                            )}>
+                              <Clock className="h-5 w-5" />
+                            </div>
                           </div>
-                          <p className="text-muted-foreground leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-500">
-                            {prog.description}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          <div className="space-y-3">
+                            <h3 className={cn("text-2xl font-headline font-bold", isLive && "text-foreground")}>{prog.name}</h3>
+                            <div className="flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider">
+                              <User className="h-4 w-4" />
+                              <span>{prog.presenter}</span>
+                            </div>
+                            <p className="text-muted-foreground leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-500">
+                              {prog.description}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </section>
             )}
 
-            {/* Verse of the day */}
-            {siteConfig.showVersiculo && (
-              <section 
-                className={cn(
-                  "relative flex items-center justify-center transition-all duration-300 shadow-[inset_0_0_100px_rgba(38,70,83,0.05)] mx-auto overflow-hidden group",
-                  siteConfig.verseBoxPadding || 'py-24 px-8',
-                  siteConfig.verseBoxRadius || 'rounded-[3rem]',
-                  siteConfig.verseBoxWidth || 'max-w-4xl',
-                  siteConfig.verseBorderWidth || 'border',
-                  !siteConfig.verseBorderColor && "border-secondary/20"
-                )}
-                style={{
-                  backgroundColor: siteConfig.verseBgColor 
-                    ? `rgba(${hexToRgb(siteConfig.verseBgColor).r}, ${hexToRgb(siteConfig.verseBgColor).g}, ${hexToRgb(siteConfig.verseBgColor).b}, ${(siteConfig.verseBgOpacity !== undefined ? siteConfig.verseBgOpacity : 5) / 100})`
-                    : `rgba(0, 199, 169, ${(siteConfig.verseBgOpacity !== undefined ? siteConfig.verseBgOpacity : 5) / 100})`,
-                  borderColor: siteConfig.verseBorderColor || undefined
-                }}
-              >
-                 <div className={cn("relative z-10 w-full space-y-8", siteConfig.verseAlign)}>
-                   <div className={cn("inline-block p-4 rounded-full bg-secondary/10 animate-bounce", siteConfig.verseAlign === "text-center" ? "mx-auto" : "")}>
-                      {(() => {
-                        const IconComponent = siteConfig.verseIcon ? (LucideIcons as any)[siteConfig.verseIcon] : null;
-                        return IconComponent ? <IconComponent className="h-8 w-8 text-secondary" /> : <Music className="h-8 w-8 text-secondary" />;
-                      })()}
-                   </div>
-                   
-                   {/* Envoltório para animação suave */}
-                   <div className="relative min-h-[120px] flex items-center" style={{ justifyContent: siteConfig.verseAlign === "text-center" ? "center" : siteConfig.verseAlign === "text-right" ? "flex-end" : "flex-start" }}>
-                     <h3 
-                       key={selectedVerse} // Key garante re-render/animação quando muda
-                       className={cn(
-                         siteConfig.verseFontSize, 
-                         siteConfig.verseFontFamily,
-                         "italic leading-relaxed drop-shadow-lg transition-all duration-300 animate-in fade-in zoom-in-95"
-                       )}
-                       style={{ color: siteConfig.verseTextColor || 'inherit' }}
-                     >
-                      {selectedVerse ? (
-                        selectedVerse
-                      ) : (
-                        <span className="inline-block h-8 bg-secondary/20 animate-pulse rounded w-3/4" />
-                      )}
-                     </h3>
-                   </div>
-                   
-                   <div className={cn("h-1 w-24 bg-secondary rounded-full", siteConfig.verseAlign === "text-center" ? "mx-auto" : "")} />
-                 </div>
-              </section>
-            )}
+            {/* Verse of the day (Client Component) */}
+            <DynamicVerse 
+              showVersiculo={siteConfig.showVersiculo}
+              verseInterval={siteConfig.verseInterval}
+              versesList={siteConfig.versesList}
+              verseText={siteConfig.verseText}
+              verseBoxPadding={siteConfig.verseBoxPadding}
+              verseBoxRadius={siteConfig.verseBoxRadius}
+              verseBoxWidth={siteConfig.verseBoxWidth}
+              verseBorderWidth={siteConfig.verseBorderWidth}
+              verseBorderColor={siteConfig.verseBorderColor}
+              verseBgColor={siteConfig.verseBgColor}
+              verseBgOpacity={siteConfig.verseBgOpacity}
+              verseAlign={siteConfig.verseAlign}
+              verseIcon={siteConfig.verseIcon}
+              verseFontSize={siteConfig.verseFontSize}
+              verseFontFamily={siteConfig.verseFontFamily}
+              verseTextColor={siteConfig.verseTextColor}
+            />
           </div>
         )}
 
@@ -803,43 +505,39 @@ export default function Home() {
                 </div>
               )}
 
-              {siteConfig.showContact && (
+              {hasSocialLinks && (
                 <div className="space-y-8">
-                   <h4 className="text-xl font-headline font-bold flex items-center gap-2">
-                     <div className="w-8 h-[2px] bg-secondary" />
-                     Social
-                   </h4>
-                   <ul className="space-y-5 text-muted-foreground">
-                    {hasSocialLinks && (
-                      <li className="flex items-center gap-6 pt-2">
-                        {showInsta && (
-                          <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl bg-secondary/10 text-secondary hover:bg-secondary hover:text-background transition-all transform hover:-translate-y-2">
-                            <Instagram className="h-6 w-6" />
-                          </a>
-                        )}
-                        {showFb && (
-                          <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl bg-secondary/10 text-secondary hover:bg-secondary hover:text-background transition-all transform hover:-translate-y-2">
-                            <Facebook className="h-6 w-6" />
-                          </a>
-                        )}
-                        {showYt && (
-                          <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-xl bg-secondary/10 text-secondary hover:bg-secondary hover:text-background transition-all transform hover:-translate-y-2">
-                            <Youtube className="h-6 w-6" />
-                          </a>
-                        )}
-                      </li>
+                  <h4 className="text-xl font-headline font-bold flex items-center gap-2">
+                    <div className="w-8 h-[2px] bg-secondary" />
+                    Conecte-se
+                  </h4>
+                  <div className="flex gap-4">
+                    {showInsta && (
+                      <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 hover:scale-110">
+                        <LucideIcons.Instagram className="h-6 w-6" />
+                      </a>
                     )}
-                   </ul>
+                    {showFb && (
+                      <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 hover:scale-110">
+                        <LucideIcons.Facebook className="h-6 w-6" />
+                      </a>
+                    )}
+                    {showYt && (
+                      <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-secondary-foreground transition-all duration-300 hover:scale-110">
+                        <LucideIcons.Youtube className="h-6 w-6" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
             
-            <div className="max-w-7xl mx-auto border-t border-border mt-24 pt-12 flex flex-col md:flex-row justify-between items-center gap-6 text-sm text-muted-foreground">
-              <p>© {new Date().getFullYear()} {rawAppName} - {siteConfig.copyrightText}</p>
-              <p className="flex items-center gap-2">
-                <DynamicIcon name={siteConfig.footerStatusIcon || 'Radio'} className="h-4 w-4 text-secondary" /> 
-                {siteConfig.footerStatusText || 'Transmitindo Esperança 24h'}
-              </p>
+            <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground font-light">
+              <p>{siteConfig.copyrightText}</p>
+              <div className="flex items-center gap-2">
+                <DynamicIcon name={siteConfig.footerStatusIcon || 'Radio'} className="h-4 w-4 text-secondary" />
+                <span>{siteConfig.footerStatusText}</span>
+              </div>
             </div>
           </footer>
         )}

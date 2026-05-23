@@ -1,302 +1,73 @@
-"use client"
-
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import AudioPlayer from '@/components/AudioPlayer';
-import { useAudioStore } from '@/lib/store';
-import { useEffect, useState } from 'react';
+import { getServerConfig } from '@/firebase/server';
+import { getCustomStyleTag } from '@/lib/theme-utils';
+import { ClientProviders } from '@/components/ClientProviders';
+import { Metadata } from 'next';
 import { cn } from '@/lib/utils';
-import { doc } from 'firebase/firestore';
 
-function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  hex = hex.replace(/^#/, '');
-  if (hex.length === 3) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getServerConfig();
+  
+  if (!config) {
+    return {
+      title: 'Rádio',
+      description: 'Ouça a nossa rádio 24h',
+    };
   }
-  const r = parseInt(hex.substring(0, 2), 16) / 255;
-  const g = parseInt(hex.substring(2, 4), 16) / 255;
-  const b = parseInt(hex.substring(4, 6), 16) / 255;
 
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = (g - b) / d + (g < b ? 6 : 0);
-        break;
-      case g:
-        h = (b - r) / d + 2;
-        break;
-      case b:
-        h = (r - g) / d + 4;
-        break;
-    }
-    h /= 6;
-  }
+  const title = config.appName || 'Rádio Maranata';
+  const description = config.slogan || 'A Voz da Esperança 24h';
+  const logoUrl = config.logoImageUrl || 'https://picsum.photos/seed/radio-maranata-192/192/192';
 
   return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: logoUrl }],
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [logoUrl],
+    },
   };
 }
 
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  hex = hex.replace(/^#/, '');
-  if (hex.length === 3) {
-    hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-  }
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  return {
-    r: isNaN(r) ? 0 : r,
-    g: isNaN(g) ? 0 : g,
-    b: isNaN(b) ? 0 : b,
-  };
-}
-
-function hslToStr({ h, s, l }: { h: number; s: number; l: number }): string {
-  return `${h} ${s}% ${l}%`;
-}
-
-function getContrastForeground(hex: string): string {
-  const hsl = hexToHsl(hex);
-  return hsl.l > 60 ? '197 45% 10%' : '210 20% 98%';
-}
-
-function getCustomStyleTag(config: any) {
-  if (!config) return '';
-
-  const colors = {
-    primaryLight: config.primaryColorLight || '#264653',
-    secondaryLight: config.secondaryColorLight || '#008f7a',
-    bgLight: config.backgroundColorLight || '#f1f5f9',
-    textLight: config.textColorLight || '#0f1e24',
-
-    primaryDark: config.primaryColorDark || '#264653',
-    secondaryDark: config.secondaryColorDark || '#00c7a9',
-    bgDark: config.backgroundColorDark || '#0b1317',
-    textDark: config.textColorDark || '#f1f5f9',
-  };
-
-  const pL = hexToHsl(colors.primaryLight);
-  const sL = hexToHsl(colors.secondaryLight);
-  const bgL = hexToHsl(colors.bgLight);
-  const tL = hexToHsl(colors.textLight);
-
-  const pD = hexToHsl(colors.primaryDark);
-  const sD = hexToHsl(colors.secondaryDark);
-  const bgD = hexToHsl(colors.bgDark);
-  const tD = hexToHsl(colors.textDark);
-
-  const rgbPL = hexToRgb(colors.primaryLight);
-  const rgbPD = hexToRgb(colors.primaryDark);
-
-  const primaryLightStr = hslToStr(pL);
-  const primaryFgLightStr = getContrastForeground(colors.primaryLight);
-  const secondaryLightStr = hslToStr(sL);
-  const secondaryFgLightStr = getContrastForeground(colors.secondaryLight);
-  const bgLightStr = hslToStr(bgL);
-  const fgLightStr = hslToStr(tL);
-
-  const cardLightStr = hslToStr({ h: bgL.h, s: bgL.s, l: bgL.l > 80 ? Math.max(0, bgL.l - 2) : Math.min(100, bgL.l + 2) });
-  const popoverLightStr = hslToStr({ h: bgL.h, s: bgL.s, l: bgL.l > 80 ? 100 : Math.max(0, bgL.l - 2) });
-  const borderLightStr = hslToStr({ h: bgL.h, s: bgL.s, l: Math.max(0, bgL.l - 8) });
-  const inputLightStr = borderLightStr;
-  const ringLightStr = secondaryLightStr;
-  const mutedLightStr = hslToStr({ h: bgL.h, s: Math.max(0, bgL.s - 10), l: Math.max(0, bgL.l - 5) });
-  const mutedFgLightStr = hslToStr({ h: tL.h, s: Math.max(0, tL.s - 20), l: Math.max(0, Math.min(100, tL.l > 50 ? tL.l - 20 : tL.l + 30)) });
-
-  const primaryDarkStr = hslToStr(pD);
-  const primaryFgDarkStr = getContrastForeground(colors.primaryDark);
-  const secondaryDarkStr = hslToStr(sD);
-  const secondaryFgDarkStr = getContrastForeground(colors.secondaryDark);
-  const bgDarkStr = hslToStr(bgD);
-  const fgDarkStr = hslToStr(tD);
-
-  const cardDarkStr = hslToStr({ h: bgD.h, s: bgD.s, l: Math.min(100, bgD.l + 4) });
-  const popoverDarkStr = hslToStr({ h: bgD.h, s: bgD.s, l: Math.min(100, bgD.l + 2) });
-  const borderDarkStr = hslToStr({ h: bgD.h, s: bgD.s, l: Math.min(100, bgD.l + 12) });
-  const inputDarkStr = borderDarkStr;
-  const ringDarkStr = secondaryDarkStr;
-  const mutedDarkStr = hslToStr({ h: bgD.h, s: Math.max(0, bgD.s - 15), l: Math.min(100, bgD.l + 12) });
-  const mutedFgDarkStr = hslToStr({ h: tD.h, s: Math.max(0, tD.s - 10), l: Math.max(0, tD.l - 28) });
-
-  return `
-    :root {
-      --background: ${bgLightStr};
-      --foreground: ${fgLightStr};
-      --card: ${cardLightStr};
-      --card-foreground: ${fgLightStr};
-      --popover: ${popoverLightStr};
-      --popover-foreground: ${fgLightStr};
-      --primary: ${primaryLightStr};
-      --primary-foreground: ${primaryFgLightStr};
-      --secondary: ${secondaryLightStr};
-      --secondary-foreground: ${secondaryFgLightStr};
-      --muted: ${mutedLightStr};
-      --muted-foreground: ${mutedFgLightStr};
-      --accent: ${secondaryLightStr};
-      --accent-foreground: ${secondaryFgLightStr};
-      --border: ${borderLightStr};
-      --input: ${inputLightStr};
-      --ring: ${ringLightStr};
-    }
-
-    .light .teal-glass {
-      background: rgba(255, 255, 255, 0.85) !important;
-      border: 1px solid rgba(${rgbPL.r}, ${rgbPL.g}, ${rgbPL.b}, 0.08) !important;
-    }
-
-    .dark {
-      --background: ${bgDarkStr};
-      --foreground: ${fgDarkStr};
-      --card: ${cardDarkStr};
-      --card-foreground: ${fgDarkStr};
-      --popover: ${popoverDarkStr};
-      --popover-foreground: ${fgDarkStr};
-      --primary: ${primaryDarkStr};
-      --primary-foreground: ${primaryFgDarkStr};
-      --secondary: ${secondaryDarkStr};
-      --secondary-foreground: ${secondaryFgDarkStr};
-      --muted: ${mutedDarkStr};
-      --muted-foreground: ${mutedFgDarkStr};
-      --accent: ${secondaryDarkStr};
-      --accent-foreground: ${secondaryFgDarkStr};
-      --border: ${borderDarkStr};
-      --input: ${inputDarkStr};
-      --ring: ${ringDarkStr};
-    }
-
-    .teal-glass {
-      background: rgba(${rgbPD.r}, ${rgbPD.g}, ${rgbPD.b}, 0.75) !important;
-    }
-  `;
-}
-
-function DynamicLayout({ children }: { children: React.ReactNode }) {
-  const db = useFirestore();
-  const configRef = useMemoFirebase(() => doc(db, 'config', 'main'), [db]);
-  const { data: config, isLoading } = useDoc(configRef);
-
-
-
-  useEffect(() => {
-    if (config?.appName) {
-      const slogan = config.slogan ? ` | ${config.slogan}` : '';
-      document.title = `${config.appName}${slogan}`;
-    }
-  }, [config]);
-
-  const isMaintenance = config?.maintenanceMode === true;
-  const showBottomPlayer = config?.showBottomPlayer !== false;
-
-  const styles = getCustomStyleTag(config);
-  const { theme, _hasHydrated } = useAudioStore();
-
-  useEffect(() => {
-    if (config) {
-      const isDark = document.documentElement.classList.contains('dark');
-      const color = isDark 
-        ? (config.primaryColorDark || '#0b1317') 
-        : (config.primaryColorLight || '#264653');
-
-      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-      if (metaThemeColor && _hasHydrated) {
-        metaThemeColor.setAttribute('content', color);
-      }
-      
-      try {
-        localStorage.setItem('radio-maranata-theme-color', color);
-      } catch (e) {}
-    }
-  }, [config, theme, _hasHydrated]);
-
-  useEffect(() => {
-    if (styles) {
-      try {
-        localStorage.setItem('radio-maranata-brand-styles', styles);
-        // Remove injected cached styles to avoid duplicate CSS taking up memory, 
-        // as React has already rendered the fresh styles below.
-        const cached = document.getElementById('cached-theme-styles');
-        if (cached) cached.remove();
-        // Remove also the class so it doesn't conflict anymore
-        document.documentElement.classList.remove('has-cached-styles');
-      } catch (e) {}
-    }
-  }, [styles]);
-
-  return (
-    <>
-      {styles && <style dangerouslySetInnerHTML={{ __html: styles }} />}
-      
-      {/* Oculto via CSS (globals.css) se houver cache, ou oculto via React quando carregar */}
-      <div className={cn("fixed inset-0 flex flex-col items-center justify-center bg-background z-[100] space-y-4 app-loader", !isLoading && "hidden")}>
-        <div className="animate-spin w-12 h-12 border-4 border-secondary/20 border-t-secondary rounded-full" />
-        <p className="text-muted-foreground text-sm font-medium animate-pulse">Carregando Rádio...</p>
-      </div>
-
-      <div className={cn("flex-1 flex flex-col w-full animate-in fade-in duration-500", !isMaintenance && showBottomPlayer && "pb-24")}>
-        {children}
-      </div>
-      {!isMaintenance && showBottomPlayer && <AudioPlayer />}
-    </>
-  );
-}
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { theme, _hasHydrated } = useAudioStore();
-  const [mounted, setMounted] = useState(false);
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
-
-  useEffect(() => {
-    setMounted(true);
-    
-    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => {
-          console.error('Falha ao registrar Service Worker:', err);
-        });
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!mounted || !_hasHydrated) return;
-
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => {
-        setResolvedTheme(mediaQuery.matches ? 'dark' : 'light');
-      };
-      
-      handleChange();
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    } else {
-      setResolvedTheme(theme);
-    }
-  }, [theme, mounted, _hasHydrated]);
-
-  const currentThemeClass = mounted && _hasHydrated ? resolvedTheme : 'dark';
+  const config = await getServerConfig();
+  const styles = getCustomStyleTag(config);
+  
+  const isMaintenance = config?.maintenanceMode;
+  const showBottomPlayer = config?.showBottomPlayer !== false && !isMaintenance;
+  
+  const initialThemeColor = config?.primaryColorDark || '#0b1317';
+  
+  // JSON-LD Structured Data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RadioStation",
+    "name": config?.appName || "Rádio Maranata",
+    "description": config?.slogan || "A Voz da Esperança 24h",
+    "image": config?.logoImageUrl || "https://picsum.photos/seed/radio-maranata-192/192/192",
+    "url": "https://radiomaranata.com", // Adjust as necessary
+    "broadcastDisplayName": config?.appName || "Rádio Maranata",
+    "broadcastFrequency": "Web Rádio",
+  };
 
   return (
     <html 
       lang="pt-BR" 
-      className={cn("scroll-smooth", currentThemeClass)} 
+      className="scroll-smooth dark" // default to dark initially, client will adjust
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
     >
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -308,25 +79,36 @@ export default function RootLayout({
         
         {/* PWA e Meta Tags Mobile */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#00C7A9" />
+        <meta name="theme-color" content={initialThemeColor} />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Rádio Maranata" />
-        <link rel="apple-touch-icon" href="https://picsum.photos/seed/radio-maranata-192/192/192" />
+        <meta name="apple-mobile-web-app-title" content={config?.appName || "Rádio"} />
+        <link rel="apple-touch-icon" href={config?.logoImageUrl || "https://picsum.photos/seed/radio-maranata-192/192/192"} />
+        
+        {/* Injeção Síncrona das Cores do Tema no Servidor (Sem flash ou carregamento!) */}
+        {styles && <style dangerouslySetInnerHTML={{ __html: styles }} />}
+        
+        {/* Injeção de Structured Data SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        
+        {/* Script leve para restaurar tema (dark/light) antes da pintura para evitar flash branco/preto na troca de tema */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                var cachedStyles = localStorage.getItem('radio-maranata-brand-styles');
-                if (cachedStyles) {
-                  document.documentElement.classList.add('has-cached-styles');
-                  document.write('<style id="cached-theme-styles">' + cachedStyles + '</style>');
-                }
-                var cachedThemeColor = localStorage.getItem('radio-maranata-theme-color');
-                if (cachedThemeColor) {
-                  var meta = document.querySelector('meta[name="theme-color"]');
-                  if (meta) meta.setAttribute('content', cachedThemeColor);
+                var storedTheme = localStorage.getItem('radio-theme');
+                if (storedTheme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.classList.add('light');
+                } else if (storedTheme === 'system') {
+                  if (!window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                  }
                 }
               } catch (e) {}
             `,
@@ -334,12 +116,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
-        <FirebaseClientProvider>
-          <DynamicLayout>
-            {children}
-          </DynamicLayout>
-          <Toaster />
-        </FirebaseClientProvider>
+        <ClientProviders showBottomPlayer={showBottomPlayer} initialThemeColor={initialThemeColor}>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );
