@@ -146,6 +146,8 @@ export default function AdminDashboard() {
   const [versesList, setVersesList] = useState<string[]>([]);
   const [newVerse, setNewVerse] = useState('');
   const [editingVerseIndex, setEditingVerseIndex] = useState<number | null>(null);
+  const [versesToConfirm, setVersesToConfirm] = useState<string[]>([]);
+  const [showVerseConfirmation, setShowVerseConfirmation] = useState(false);
 
   const [noticesList, setNoticesList] = useState<any[]>([]);
   const [newNotice, setNewNotice] = useState({
@@ -237,6 +239,12 @@ export default function AdminDashboard() {
           '"Tudo posso naquele que me fortalece." - Filipenses 4:13',
           '"Não fui eu que ordenei a você? Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar." - Josué 1:9'
         ],
+        verseInterval: 10,
+        verseFontSize: 'text-3xl md:text-4xl',
+        verseFontFamily: 'font-headline',
+        verseAlign: 'text-center',
+        verseTextColor: '',
+        verseBgOpacity: 5,
         showAbout: true,
         showProgramacao: true,
         showVersiculo: true,
@@ -287,7 +295,13 @@ export default function AdminDashboard() {
       noticeBarLinkUrl: firstNotice ? firstNotice.linkUrl : '',
       heroBgOpacity: localConfig.heroBgOpacity !== undefined ? localConfig.heroBgOpacity : 0.2,
       heroOverlayOpacity: localConfig.heroOverlayOpacity !== undefined ? localConfig.heroOverlayOpacity : 0.6,
-      heroLayout: localConfig.heroLayout || 'classic'
+      heroLayout: localConfig.heroLayout || 'classic',
+      verseInterval: localConfig.verseInterval !== undefined ? localConfig.verseInterval : 10,
+      verseFontSize: localConfig.verseFontSize || 'text-3xl md:text-4xl',
+      verseFontFamily: localConfig.verseFontFamily || 'font-headline',
+      verseAlign: localConfig.verseAlign || 'text-center',
+      verseTextColor: localConfig.verseTextColor || '',
+      verseBgOpacity: localConfig.verseBgOpacity !== undefined ? localConfig.verseBgOpacity : 5
     };
     
     setDocumentNonBlocking(configRef, updatedConfig, { merge: true });
@@ -384,13 +398,36 @@ export default function AdminDashboard() {
       updatedVerses[editingVerseIndex] = newVerse.trim();
       setVersesList(updatedVerses);
       setEditingVerseIndex(null);
+      setNewVerse('');
       toast({ title: "Versículo Atualizado" });
-    } else {
-      setVersesList([...versesList, newVerse.trim()]);
-      toast({ title: "Versículo Adicionado" });
+      return;
     }
     
+    const lines = newVerse.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+    
+    if (lines.length > 1) {
+      setVersesToConfirm(lines);
+      setShowVerseConfirmation(true);
+    } else if (lines.length === 1) {
+      setVersesList([...versesList, lines[0]]);
+      setNewVerse('');
+      toast({ title: "Versículo Adicionado" });
+    } else {
+      toast({ variant: "destructive", title: "Nenhum versículo válido encontrado" });
+    }
+  };
+
+  const confirmAddMultipleVerses = () => {
+    setVersesList([...versesList, ...versesToConfirm]);
+    setVersesToConfirm([]);
+    setShowVerseConfirmation(false);
     setNewVerse('');
+    toast({ title: `${versesToConfirm.length} Versículos Adicionados` });
+  };
+  
+  const cancelAddMultipleVerses = () => {
+    setVersesToConfirm([]);
+    setShowVerseConfirmation(false);
   };
 
   const handleEditVerse = (index: number) => {
@@ -593,6 +630,9 @@ export default function AdminDashboard() {
               <TabsTrigger value="geral" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <Info className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Geral</span>
               </TabsTrigger>
+              <TabsTrigger value="versiculos" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <BookOpen className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Versículos</span>
+              </TabsTrigger>
               <TabsTrigger value="design" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <Palette className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Design</span>
               </TabsTrigger>
@@ -672,78 +712,217 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              <Card className="border-white/5 bg-card/30">
-                <CardHeader>
-                  <CardTitle className="text-secondary text-lg flex items-center gap-2"><Cross className="h-5 w-5" /> Versículos Bíblicos Cadastrados</CardTitle>
-                  <CardDescription>Cadastre múltiplos versículos. Ao carregar o site, um deles será selecionado aleatoriamente.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-xs">{editingVerseIndex !== null ? 'Editar Versículo' : 'Novo Versículo'}</Label>
-                    <Textarea 
-                      placeholder='Ex: "O Senhor é o meu pastor, nada me faltará." - Salmos 23:1'
-                      value={newVerse} 
-                      onChange={e => setNewVerse(e.target.value)} 
-                      rows={3}
-                      className="bg-background/50 border-white/10 text-sm animate-in fade-in"
-                    />
-                    <div className="flex gap-2">
-                      <Button variant="secondary" onClick={handleAddVerse} className="w-full gap-2">
-                        {editingVerseIndex !== null ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                        {editingVerseIndex !== null ? "Atualizar Versículo" : "Adicionar Versículo"}
+            <TabsContent value="versiculos" className="space-y-6 animate-in fade-in duration-300">
+              {showVerseConfirmation ? (
+                <Card className="border-secondary/50 bg-secondary/10 shadow-[0_0_30px_rgba(0,199,169,0.1)]">
+                  <CardHeader>
+                    <CardTitle className="text-secondary text-lg flex items-center gap-2"><Sparkles className="h-5 w-5" /> Confirmar Adição em Massa</CardTitle>
+                    <CardDescription>Foram detectados {versesToConfirm.length} versículos válidos. Deseja adicionar todos à lista?</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="max-h-60 overflow-y-auto space-y-2 border border-white/10 rounded-md p-4 bg-background/50">
+                      {versesToConfirm.map((v, i) => (
+                        <div key={i} className="text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                          <span className="text-secondary font-bold mr-2">{i + 1}.</span>{v}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-4 pt-2">
+                      <Button onClick={confirmAddMultipleVerses} className="flex-1 bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                        Confirmar e Adicionar
                       </Button>
-                      {editingVerseIndex !== null && (
-                        <Button variant="outline" onClick={() => { setEditingVerseIndex(null); setNewVerse(''); }} className="border-white/10 hover:bg-white/5">
-                          Cancelar
-                        </Button>
-                      )}
+                      <Button variant="outline" onClick={cancelAddMultipleVerses} className="flex-1 border-white/10 hover:bg-white/5">
+                        Cancelar
+                      </Button>
                     </div>
-                  </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  {/* Coluna Esquerda: Cadastro de Versículos */}
+                  <Card className="border-white/5 bg-card/30 flex flex-col">
+                    <CardHeader>
+                      <CardTitle className="text-secondary text-lg flex items-center gap-2"><BookOpen className="h-5 w-5" /> Cadastrar Versículos</CardTitle>
+                      <CardDescription>Cole múltiplos versículos de uma vez (um por linha) ou adicione individualmente.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-1 flex flex-col space-y-6">
+                      <div className="space-y-2">
+                        <Label className="text-xs">{editingVerseIndex !== null ? 'Editar Versículo' : 'Novo(s) Versículo(s)'}</Label>
+                        <Textarea 
+                          placeholder='Cole aqui...&#10;"O Senhor é o meu pastor..." - Salmos 23:1&#10;"Tudo posso..." - Filipenses 4:13'
+                          value={newVerse} 
+                          onChange={e => setNewVerse(e.target.value)} 
+                          rows={6}
+                          className="bg-background/50 border-white/10 text-sm animate-in fade-in resize-none"
+                        />
+                        <div className="flex gap-2 pt-2">
+                          <Button variant="secondary" onClick={handleAddVerse} className="w-full gap-2">
+                            {editingVerseIndex !== null ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                            {editingVerseIndex !== null ? "Atualizar Versículo" : "Adicionar Versículos"}
+                          </Button>
+                          {editingVerseIndex !== null && (
+                            <Button variant="outline" onClick={() => { setEditingVerseIndex(null); setNewVerse(''); }} className="border-white/10 hover:bg-white/5">
+                              Cancelar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
 
-                  {versesList.length > 0 && (
-                    <div className="mt-4 border rounded-lg overflow-hidden border-white/5">
-                      <Table>
-                        <TableBody>
-                          {versesList.map((verse, idx) => (
-                            <TableRow key={idx} className="hover:bg-white/5">
-                              <TableCell className="font-medium text-xs py-3 max-w-[200px] md:max-w-md break-words">{verse}</TableCell>
-                              <TableCell className="text-right py-3 pr-4">
-                                <div className="flex justify-end gap-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => handleMoveVerse(idx, 'up')} 
-                                    disabled={idx === 0}
-                                    className="h-8 w-8 text-secondary disabled:opacity-30"
-                                  >
-                                    <ArrowUp className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={() => handleMoveVerse(idx, 'down')} 
-                                    disabled={idx === versesList.length - 1}
-                                    className="h-8 w-8 text-secondary disabled:opacity-30"
-                                  >
-                                    <ArrowDown className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => handleEditVerse(idx)} className="h-8 w-8 text-secondary">
-                                    <Pencil className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => handleRemoveVerse(idx)} className="text-destructive h-8 w-8">
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      {versesList.length > 0 && (
+                        <div className="mt-4 border rounded-lg overflow-hidden border-white/5 flex-1">
+                          <Table>
+                            <TableBody>
+                              {versesList.map((verse, idx) => (
+                                <TableRow key={idx} className="hover:bg-white/5">
+                                  <TableCell className="font-medium text-xs py-3 max-w-[200px] md:max-w-md break-words">{verse}</TableCell>
+                                  <TableCell className="text-right py-3 pr-4">
+                                    <div className="flex justify-end gap-1">
+                                      <Button variant="ghost" size="icon" onClick={() => handleMoveVerse(idx, 'up')} disabled={idx === 0} className="h-8 w-8 text-secondary disabled:opacity-30">
+                                        <ArrowUp className="h-4 w-4" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon" onClick={() => handleMoveVerse(idx, 'down')} disabled={idx === versesList.length - 1} className="h-8 w-8 text-secondary disabled:opacity-30">
+                                        <ArrowDown className="h-4 w-4" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon" onClick={() => handleEditVerse(idx)} className="h-8 w-8 text-secondary">
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon" onClick={() => handleRemoveVerse(idx)} className="text-destructive h-8 w-8">
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Coluna Direita: Estilização e Preview */}
+                  <div className="space-y-6">
+                    <Card className="border-white/5 bg-card/30">
+                      <CardHeader>
+                        <CardTitle className="text-secondary text-lg flex items-center gap-2"><Palette className="h-5 w-5" /> Personalização e Estilo</CardTitle>
+                        <CardDescription>Configure como a caixa de versículos aparece no site.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-xs">Tempo de Alternância (s)</Label>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              value={localConfig?.verseInterval !== undefined ? localConfig?.verseInterval : 10} 
+                              onChange={e => setLocalConfig({...localConfig, verseInterval: parseInt(e.target.value) || 0})}
+                              className="bg-background/50 border-white/10"
+                            />
+                            <p className="text-[10px] text-muted-foreground">0 para não alternar</p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Tamanho da Fonte</Label>
+                            <Select value={localConfig?.verseFontSize || 'text-3xl md:text-4xl'} onValueChange={v => setLocalConfig({...localConfig, verseFontSize: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="text-xl md:text-2xl">Pequeno</SelectItem>
+                                <SelectItem value="text-2xl md:text-3xl">Médio</SelectItem>
+                                <SelectItem value="text-3xl md:text-4xl">Grande</SelectItem>
+                                <SelectItem value="text-4xl md:text-5xl">Extra Grande</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Tipo de Fonte</Label>
+                            <Select value={localConfig?.verseFontFamily || 'font-headline'} onValueChange={v => setLocalConfig({...localConfig, verseFontFamily: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="font-headline">Headline (Títulos)</SelectItem>
+                                <SelectItem value="font-body">Body (Textos Normais)</SelectItem>
+                                <SelectItem value="font-serif italic">Serif (Itálico)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Alinhamento</Label>
+                            <Select value={localConfig?.verseAlign || 'text-center'} onValueChange={v => setLocalConfig({...localConfig, verseAlign: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="text-left">Esquerda</SelectItem>
+                                <SelectItem value="text-center">Centro</SelectItem>
+                                <SelectItem value="text-right">Direita</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Cor do Texto (Opcional)</Label>
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="color" 
+                                value={localConfig?.verseTextColor || '#ffffff'} 
+                                onChange={e => setLocalConfig({...localConfig, verseTextColor: e.target.value})}
+                                className="h-10 w-10 cursor-pointer rounded-md border border-white/10"
+                              />
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => setLocalConfig({...localConfig, verseTextColor: ''})}
+                                className="h-10 border-white/10 text-xs"
+                              >
+                                Limpar
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Opacidade do Fundo ({localConfig?.verseBgOpacity !== undefined ? localConfig?.verseBgOpacity : 5}%)</Label>
+                            <Slider 
+                              value={[localConfig?.verseBgOpacity !== undefined ? localConfig?.verseBgOpacity : 5]} 
+                              max={100} 
+                              step={1}
+                              onValueChange={v => setLocalConfig({...localConfig, verseBgOpacity: v[0]})}
+                              className="pt-2"
+                            />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Preview do Versículo */}
+                    <Card className="border-white/5 bg-card/30 overflow-hidden">
+                      <CardHeader className="bg-secondary/10 border-b border-white/5">
+                        <CardTitle className="text-secondary text-sm flex items-center gap-2"><Eye className="h-4 w-4" /> Pré-visualização</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <div 
+                          className="relative py-12 px-8 flex items-center justify-center transition-all duration-300"
+                          style={{
+                            backgroundColor: `rgba(0, 199, 169, ${(localConfig?.verseBgOpacity !== undefined ? localConfig?.verseBgOpacity : 5) / 100})`
+                          }}
+                        >
+                          <div className={cn("relative z-10 w-full space-y-6", localConfig?.verseAlign || "text-center")}>
+                             <div className={cn("inline-block p-4 rounded-full bg-secondary/10", (localConfig?.verseAlign || "text-center") === "text-center" ? "mx-auto" : "")}>
+                                <Music className="h-6 w-6 text-secondary" />
+                             </div>
+                             <h3 
+                               className={cn(
+                                 localConfig?.verseFontSize || "text-3xl md:text-4xl", 
+                                 localConfig?.verseFontFamily || "font-headline",
+                                 "leading-relaxed drop-shadow-lg transition-all duration-300"
+                               )}
+                               style={{ color: localConfig?.verseTextColor || 'inherit' }}
+                             >
+                              {versesList[0] || '"Lâmpada para os meus pés é tua palavra..." - Salmos 119:105'}
+                             </h3>
+                             <div className={cn("h-1 w-24 bg-secondary rounded-full", (localConfig?.verseAlign || "text-center") === "text-center" ? "mx-auto" : "")} />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="design" className="space-y-6 animate-in fade-in duration-300">

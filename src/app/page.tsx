@@ -121,6 +121,12 @@ export default function Home() {
         '"Tudo posso naquele que me fortalece." - Filipenses 4:13',
         '"Não fui eu que ordenei a você? Seja forte e corajoso! Não se apavore nem desanime, pois o Senhor, o seu Deus, estará com você por onde você andar." - Josué 1:9'
       ],
+      verseInterval: config?.verseInterval !== undefined ? config.verseInterval : 10,
+      verseFontSize: config?.verseFontSize || 'text-3xl md:text-4xl',
+      verseFontFamily: config?.verseFontFamily || 'font-headline',
+      verseAlign: config?.verseAlign || 'text-center',
+      verseTextColor: config?.verseTextColor || '',
+      verseBgOpacity: config?.verseBgOpacity !== undefined ? config.verseBgOpacity : 5,
       showAbout: config?.showAbout !== false,
       showProgramacao: config?.showProgramacao !== false,
       showVersiculo: config?.showVersiculo !== false,
@@ -163,6 +169,22 @@ export default function Home() {
     setPrevVersesListStr(versesListStr);
     setSelectedVerse(chosen);
   }
+
+  // Efeito para alternar versículos
+  useEffect(() => {
+    if (!mounted || !siteConfig.showVersiculo || siteConfig.verseInterval === 0 || !siteConfig.versesList || siteConfig.versesList.length <= 1) return;
+    
+    const interval = setInterval(() => {
+      setSelectedVerse(current => {
+        const list = siteConfig.versesList;
+        const currentIndex = list.indexOf(current);
+        const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % list.length;
+        return list[nextIndex];
+      });
+    }, siteConfig.verseInterval * 1000);
+    
+    return () => clearInterval(interval);
+  }, [mounted, siteConfig.showVersiculo, siteConfig.verseInterval, versesListStr]);
 
   // Efeito para validar e filtrar avisos ativos apenas no cliente
   useEffect(() => {
@@ -694,19 +716,37 @@ export default function Home() {
 
             {/* Verse of the day */}
             {siteConfig.showVersiculo && (
-              <section className="relative py-24 px-8 text-center bg-secondary/5 rounded-[3rem] border border-secondary/20 overflow-hidden group shadow-[inset_0_0_100px_rgba(38,70,83,0.05)]">
-                 <div className="relative z-10 max-w-3xl mx-auto space-y-8">
-                   <div className="inline-block p-4 rounded-full bg-secondary/10 animate-bounce">
+              <section 
+                className="relative py-24 px-8 flex items-center justify-center rounded-[3rem] border border-secondary/20 overflow-hidden group shadow-[inset_0_0_100px_rgba(38,70,83,0.05)] transition-all duration-300"
+                style={{
+                  backgroundColor: `rgba(0, 199, 169, ${(siteConfig.verseBgOpacity) / 100})`
+                }}
+              >
+                 <div className={cn("relative z-10 w-full max-w-4xl space-y-8", siteConfig.verseAlign)}>
+                   <div className={cn("inline-block p-4 rounded-full bg-secondary/10 animate-bounce", siteConfig.verseAlign === "text-center" ? "mx-auto" : "")}>
                       <Music className="h-8 w-8 text-secondary" />
                    </div>
-                   <h3 className="text-3xl md:text-4xl font-headline italic leading-relaxed drop-shadow-lg">
-                    {selectedVerse ? (
-                      selectedVerse
-                    ) : (
-                      <span className="inline-block h-8 bg-secondary/20 animate-pulse rounded w-3/4 mx-auto" />
-                    )}
-                   </h3>
-                   <div className="h-1 w-24 bg-secondary mx-auto rounded-full" />
+                   
+                   {/* Envoltório para animação suave */}
+                   <div className="relative min-h-[120px] flex items-center" style={{ justifyContent: siteConfig.verseAlign === "text-center" ? "center" : siteConfig.verseAlign === "text-right" ? "flex-end" : "flex-start" }}>
+                     <h3 
+                       key={selectedVerse} // Key garante re-render/animação quando muda
+                       className={cn(
+                         siteConfig.verseFontSize, 
+                         siteConfig.verseFontFamily,
+                         "italic leading-relaxed drop-shadow-lg transition-all duration-300 animate-in fade-in zoom-in-95"
+                       )}
+                       style={{ color: siteConfig.verseTextColor || 'inherit' }}
+                     >
+                      {selectedVerse ? (
+                        selectedVerse
+                      ) : (
+                        <span className="inline-block h-8 bg-secondary/20 animate-pulse rounded w-3/4" />
+                      )}
+                     </h3>
+                   </div>
+                   
+                   <div className={cn("h-1 w-24 bg-secondary rounded-full", siteConfig.verseAlign === "text-center" ? "mx-auto" : "")} />
                  </div>
               </section>
             )}
