@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
 import AudioPlayer from '@/components/AudioPlayer';
+import DynamicBackground from '@/components/DynamicBackground';
 import { useAudioStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
@@ -77,6 +78,7 @@ export function ClientProviders({
   return (
     <FirebaseClientProvider>
       <div className={cn("flex-1 flex flex-col w-full animate-in fade-in duration-500", showBottomPlayer && "pb-24")}>
+        <DynamicBackground />
         {children}
       </div>
       {showBottomPlayer && <AudioPlayer />}

@@ -657,6 +657,9 @@ export default function AdminDashboard() {
               <TabsTrigger value="design" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <Palette className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Design</span>
               </TabsTrigger>
+              <TabsTrigger value="programacao" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <ListMusic className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Programação</span>
+              </TabsTrigger>
               <TabsTrigger value="avisos" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <Megaphone className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Avisos</span>
               </TabsTrigger>
@@ -1058,6 +1061,122 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="programacao" className="space-y-6 animate-in fade-in duration-300">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <Card className="border-white/5 bg-card/30">
+                  <CardHeader>
+                    <CardTitle className="text-secondary text-lg flex items-center gap-2"><ListMusic className="h-5 w-5" /> Estilo da Grade</CardTitle>
+                    <CardDescription>Customize o visual dos cartões de programação.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Estilo do Cartão</Label>
+                      <Select value={localConfig?.programStyle || 'glass'} onValueChange={v => setLocalConfig({...localConfig, programStyle: v})}>
+                        <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="glass">Vidro (Glassmorphism)</SelectItem>
+                          <SelectItem value="solid">Cor Sólida</SelectItem>
+                          <SelectItem value="neon">Neon</SelectItem>
+                          <SelectItem value="minimal">Minimalista (Sem fundo)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs">Cor do Fundo (Hex)</Label>
+                      <div className="flex gap-2">
+                        <Input type="color" value={localConfig?.programBgColor || '#264653'} onChange={e => setLocalConfig({...localConfig, programBgColor: e.target.value})} className="w-12 h-10 p-1 bg-background/50 border-white/10" />
+                        <Input value={localConfig?.programBgColor || ''} onChange={e => setLocalConfig({...localConfig, programBgColor: e.target.value})} placeholder="#264653" className="flex-1 bg-background/50 border-white/10" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs">Cor da Borda (Hex)</Label>
+                      <div className="flex gap-2">
+                        <Input type="color" value={localConfig?.programBorderColor || '#00C7A9'} onChange={e => setLocalConfig({...localConfig, programBorderColor: e.target.value})} className="w-12 h-10 p-1 bg-background/50 border-white/10" />
+                        <Input value={localConfig?.programBorderColor || ''} onChange={e => setLocalConfig({...localConfig, programBorderColor: e.target.value})} placeholder="#00C7A9" className="flex-1 bg-background/50 border-white/10" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs">Arredondamento</Label>
+                      <Select value={localConfig?.programRadius || 'rounded-2xl'} onValueChange={v => setLocalConfig({...localConfig, programRadius: v})}>
+                        <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="rounded-none">Quadrado</SelectItem>
+                          <SelectItem value="rounded-md">Pequeno</SelectItem>
+                          <SelectItem value="rounded-2xl">Arredondado</SelectItem>
+                          <SelectItem value="rounded-[3rem]">Pílula</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs">Alinhamento do Texto</Label>
+                      <Select value={localConfig?.programTextAlign || 'text-left'} onValueChange={v => setLocalConfig({...localConfig, programTextAlign: v})}>
+                        <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="text-left">Esquerda</SelectItem>
+                          <SelectItem value="text-center">Centro</SelectItem>
+                          <SelectItem value="text-right">Direita</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-xs">Ícone</Label>
+                      <Select value={localConfig?.programIcon || 'Clock'} onValueChange={v => setLocalConfig({...localConfig, programIcon: v})}>
+                        <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {ICON_OPTIONS.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <div className="flex items-center gap-2"><opt.icon className="h-4 w-4" />{opt.label}</div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Preview Card */}
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold text-secondary flex items-center gap-2"><Eye className="h-4 w-4" /> Pré-Visualização</h3>
+                  <div className="p-8 bg-black/20 rounded-xl border border-white/5 flex items-center justify-center relative overflow-hidden">
+                    <div 
+                      className={cn(
+                        "w-full max-w-sm p-8 space-y-6 transition-all duration-500 relative",
+                        localConfig?.programRadius || 'rounded-2xl',
+                        localConfig?.programTextAlign || 'text-left',
+                        localConfig?.programStyle === 'glass' ? "teal-glass border" : 
+                        localConfig?.programStyle === 'solid' ? "bg-card/90 border" : 
+                        localConfig?.programStyle === 'neon' ? "bg-background/80 border shadow-[0_0_20px_rgba(var(--secondary),0.4)]" : "bg-transparent border-b"
+                      )}
+                      style={{
+                        backgroundColor: localConfig?.programStyle === 'solid' ? (localConfig?.programBgColor || undefined) : undefined,
+                        borderColor: localConfig?.programBorderColor || (localConfig?.programStyle === 'neon' ? 'var(--secondary)' : undefined),
+                      }}
+                    >
+                      <div className={cn("flex items-center", localConfig?.programTextAlign === 'text-center' ? 'justify-center flex-col gap-4' : localConfig?.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : 'justify-between')}>
+                        <span className="text-3xl font-black text-secondary/30">12:00</span>
+                        <div className="p-2 rounded-lg bg-secondary/10 text-secondary">
+                          <DynamicIcon name={localConfig?.programIcon || 'Clock'} className="h-5 w-5" />
+                        </div>
+                      </div>
+                      <div className={cn("space-y-3", localConfig?.programTextAlign === 'text-center' ? 'items-center flex flex-col' : localConfig?.programTextAlign === 'text-right' ? 'items-end flex flex-col' : '')}>
+                        <h3 className="text-2xl font-headline font-bold text-foreground">Exemplo de Programa</h3>
+                        <div className={cn("flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider", localConfig?.programTextAlign === 'text-center' ? 'justify-center' : localConfig?.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : '')}>
+                          <LucideIcons.User className="h-4 w-4" />
+                          <span>Locutor Exemplo</span>
+                        </div>
+                        <p className="text-muted-foreground leading-relaxed">Descrição curta para testar o visual do cartão.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="design" className="space-y-6 animate-in fade-in duration-300">

@@ -12,6 +12,8 @@ import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import NowPlaying from './NowPlaying';
 
+const SCROLL_THRESHOLD = 400;
+
 const Visualizer = ({ isPlaying }: { isPlaying: boolean }) => {
   return (
     <div className="flex items-end gap-1 h-8 px-2">
@@ -34,6 +36,7 @@ const Visualizer = ({ isPlaying }: { isPlaying: boolean }) => {
 
 export default function AudioPlayer() {
   const [isMounted, setIsMounted] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const configApplied = useRef(false);
   
@@ -60,6 +63,18 @@ export default function AudioPlayer() {
   const appName = config?.appName || 'Rádio Maranata';
   const defaultVolume = config?.defaultVolume !== undefined ? config.defaultVolume : 0.6;
   const autoplayEnabled = config?.autoplay !== false;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > SCROLL_THRESHOLD);
+    };
+    
+    // Initial check
+    handleScroll();
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Sincronização inicial de configurações
   useEffect(() => {
@@ -129,7 +144,16 @@ export default function AudioPlayer() {
   if (!isMounted) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 h-24 border-t border-white/10 teal-glass px-4 flex items-center shadow-2xl">
+    <div 
+      className={cn(
+        "fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500",
+        isScrolled 
+          ? "bottom-6 opacity-100 scale-100" 
+          : "-bottom-32 opacity-0 scale-90 pointer-events-none"
+      )}
+      style={{ transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)' }}
+    >
+      <div className="w-[95vw] max-w-[600px] h-[72px] md:h-20 rounded-[2.5rem] teal-glass px-4 flex items-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] ring-1 ring-white/10 mx-auto">
       <audio 
         ref={audioRef} 
         src={streamUrl} 
@@ -140,13 +164,13 @@ export default function AudioPlayer() {
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={cn(
-            "h-12 w-12 rounded-full flex items-center justify-center bg-primary shrink-0 transition-all duration-500",
+            "h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center bg-primary shrink-0 transition-all duration-500",
             isPlaying && "animate-pulse shadow-[0_0_20px_rgba(42,157,143,0.6)]"
           )}>
-            <Radio className="text-primary-foreground h-6 w-6" />
+            <Radio className="text-primary-foreground h-5 w-5 md:h-6 md:w-6" />
           </div>
-          <div className="min-w-0">
-            <h4 className="font-headline text-secondary text-sm md:text-base truncate">
+          <div className="min-w-0 flex-1">
+            <h4 className="font-headline text-secondary text-xs md:text-sm truncate">
               {appName} - Ao Vivo
             </h4>
             {showNowPlaying && (
@@ -212,11 +236,11 @@ export default function AudioPlayer() {
             size="icon" 
             onClick={() => setIsPlaying(!isPlaying)}
             className={cn(
-              "h-14 w-14 md:h-16 md:w-16 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-xl transition-all duration-300",
+              "h-12 w-12 md:h-14 md:w-14 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-xl transition-all duration-300",
               isPlaying ? "hover:scale-105" : "animate-bounce scale-110 shadow-secondary/50"
             )}
           >
-            {isPlaying ? <Pause className="h-8 w-8 md:h-10 md:w-10 fill-current" /> : <Play className="h-8 w-8 md:h-10 md:w-10 fill-current ml-1" />}
+            {isPlaying ? <Pause className="h-6 w-6 md:h-8 md:w-8 fill-current" /> : <Play className="h-6 w-6 md:h-8 md:w-8 fill-current ml-1" />}
           </Button>
         </div>
 
@@ -248,6 +272,7 @@ export default function AudioPlayer() {
               {Math.round(volume * 100)}%
             </span>
           </div>
+        </div>
         </div>
       </div>
     </div>

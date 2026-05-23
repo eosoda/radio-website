@@ -91,6 +91,14 @@ export default async function Home() {
     verseBorderColor: config?.verseBorderColor || '',
     showAbout: config?.showAbout !== false,
     showProgramacao: config?.showProgramacao !== false,
+    programStyle: config?.programStyle || 'glass',
+    programBgColor: config?.programBgColor || '',
+    programBgOpacity: config?.programBgOpacity !== undefined ? config.programBgOpacity : 10,
+    programBorderColor: config?.programBorderColor || '',
+    programBorderWidth: config?.programBorderWidth || 'border',
+    programRadius: config?.programRadius || 'rounded-2xl',
+    programTextAlign: config?.programTextAlign || 'text-left',
+    programIcon: config?.programIcon || 'Clock',
     showVersiculo: config?.showVersiculo !== false,
     showNowPlaying: config?.showNowPlaying !== false,
     showFooter: config?.showFooter !== false,
@@ -399,11 +407,44 @@ export default async function Home() {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
                   {programs.map((prog, idx) => {
                     const isLive = prog.id === activeProgramId;
+                    
+                    let cardClasses = "";
+                    let customStyles: React.CSSProperties = {};
+
+                    if (isLive) {
+                      cardClasses = "border-secondary/50 bg-secondary/5 ring-1 ring-secondary/20";
+                    } else {
+                      if (siteConfig.programStyle === 'glass') {
+                        cardClasses = `teal-glass hover:border-secondary/50 ${siteConfig.programBorderWidth}`;
+                        if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
+                      } else if (siteConfig.programStyle === 'solid') {
+                        cardClasses = `bg-card/90 hover:border-secondary/50 ${siteConfig.programBorderWidth}`;
+                        if (siteConfig.programBgColor) {
+                          customStyles = { ...customStyles, backgroundColor: siteConfig.programBgColor };
+                          if (siteConfig.programBgOpacity !== undefined) {
+                            // Opacity logic for solid color
+                          }
+                        }
+                        if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
+                      } else if (siteConfig.programStyle === 'neon') {
+                        cardClasses = `bg-background/80 hover:shadow-[0_0_20px_rgba(var(--secondary),0.4)] ${siteConfig.programBorderWidth}`;
+                        if (siteConfig.programBorderColor) {
+                          customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
+                        } else {
+                          cardClasses += ' border-secondary';
+                        }
+                      } else if (siteConfig.programStyle === 'minimal') {
+                        cardClasses = `bg-transparent hover:bg-secondary/5 border-b ${siteConfig.programBorderWidth === 'border-0' ? 'border-b-0' : ''}`;
+                        if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
+                      }
+                    }
+
                     return (
                       <Card key={prog.id} className={cn(
                         "transition-all duration-500 group animate-in fade-in slide-in-from-bottom-4 relative overflow-hidden",
-                        isLive ? "border-secondary/50 bg-secondary/5 ring-1 ring-secondary/20" : "border-border teal-glass hover:border-secondary/50"
-                      )} style={{ animationDelay: `${idx * 100}ms` }}>
+                        siteConfig.programRadius,
+                        cardClasses
+                      )} style={{ animationDelay: `${idx * 100}ms`, ...customStyles }}>
                         {isLive && (
                           <div className="absolute top-0 right-0 p-4 z-10 flex items-center gap-1.5">
                             <span className="relative flex h-2.5 w-2.5">
@@ -413,8 +454,8 @@ export default async function Home() {
                             <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">No Ar</span>
                           </div>
                         )}
-                        <CardContent className="p-8 space-y-6 relative z-0">
-                          <div className="flex justify-between items-center">
+                        <CardContent className={cn("p-8 space-y-6 relative z-0", siteConfig.programTextAlign)}>
+                          <div className={cn("flex items-center", siteConfig.programTextAlign === 'text-center' ? 'justify-center flex-col gap-4' : siteConfig.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : 'justify-between')}>
                             <span className={cn(
                               "text-3xl font-black transition-colors duration-500",
                               isLive ? "text-secondary" : "text-secondary/30 group-hover:text-secondary"
@@ -422,15 +463,15 @@ export default async function Home() {
                               {prog.horario}
                             </span>
                             <div className={cn(
-                              "p-2 rounded-lg transition-opacity",
+                              "p-2 rounded-lg transition-opacity flex-shrink-0",
                               isLive ? "bg-secondary/20 text-secondary opacity-100" : "bg-secondary/10 text-secondary opacity-0 group-hover:opacity-100"
                             )}>
-                              <Clock className="h-5 w-5" />
+                              <DynamicIcon name={siteConfig.programIcon} className="h-5 w-5" />
                             </div>
                           </div>
-                          <div className="space-y-3">
+                          <div className={cn("space-y-3", siteConfig.programTextAlign === 'text-center' ? 'items-center flex flex-col' : siteConfig.programTextAlign === 'text-right' ? 'items-end flex flex-col' : '')}>
                             <h3 className={cn("text-2xl font-headline font-bold", isLive && "text-foreground")}>{prog.name}</h3>
-                            <div className="flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider">
+                            <div className={cn("flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider", siteConfig.programTextAlign === 'text-center' ? 'justify-center' : siteConfig.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : '')}>
                               <User className="h-4 w-4" />
                               <span>{prog.presenter}</span>
                             </div>
