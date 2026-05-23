@@ -202,16 +202,33 @@ function DynamicLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (config) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const color = isDark 
+        ? (config.primaryColorDark || '#0b1317') 
+        : (config.primaryColorLight || '#264653');
+
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor && _hasHydrated) {
-        const isDark = document.documentElement.classList.contains('dark');
-        const color = isDark 
-          ? (config.primaryColorDark || '#0b1317') 
-          : (config.primaryColorLight || '#264653');
         metaThemeColor.setAttribute('content', color);
       }
+      
+      try {
+        localStorage.setItem('radio-maranata-theme-color', color);
+      } catch (e) {}
     }
   }, [config, theme, _hasHydrated]);
+
+  useEffect(() => {
+    if (styles) {
+      try {
+        localStorage.setItem('radio-maranata-brand-styles', styles);
+        // Remove injected cached styles to avoid duplicate CSS taking up memory, 
+        // as React has already rendered the fresh styles below.
+        const cached = document.getElementById('cached-theme-styles');
+        if (cached) cached.remove();
+      } catch (e) {}
+    }
+  }, [styles]);
 
   return (
     <>
@@ -286,6 +303,23 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Rádio Maranata" />
         <link rel="apple-touch-icon" href="https://picsum.photos/seed/radio-maranata-192/192/192" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var cachedStyles = localStorage.getItem('radio-maranata-brand-styles');
+                if (cachedStyles) {
+                  document.write('<style id="cached-theme-styles">' + cachedStyles + '</style>');
+                }
+                var cachedThemeColor = localStorage.getItem('radio-maranata-theme-color');
+                if (cachedThemeColor) {
+                  var meta = document.querySelector('meta[name="theme-color"]');
+                  if (meta) meta.setAttribute('content', cachedThemeColor);
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
         <FirebaseClientProvider>
