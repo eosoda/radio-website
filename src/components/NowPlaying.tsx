@@ -21,7 +21,7 @@ export default function NowPlaying({
 
   useEffect(() => {
     if (!useDynamic) {
-      setSong(staticText || "Sintonizando Rádio Vida...");
+      setSong(staticText || "Sintonizando Rádio Maranata...");
       setIsError(false);
       return;
     }

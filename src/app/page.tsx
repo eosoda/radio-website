@@ -80,7 +80,7 @@ export default function Home() {
 
   const siteConfig = useMemo(() => {
     return {
-      appName: config?.appName || 'Rádio Vida',
+      appName: config?.appName || 'Rádio Maranata',
       slogan: config?.slogan || 'A voz da esperança 24h',
       logoImageUrl: config?.logoImageUrl || '',
       logoSize: config?.logoSize !== undefined ? config.logoSize : 320,
@@ -136,12 +136,12 @@ export default function Home() {
       showYoutube: config?.showYoutube !== false,
       showUsefulLinks: config?.showUsefulLinks !== false,
       showContact: config?.showContact !== false,
-      copyrightText: config?.copyrightText || 'Rádio Vida - Todos os direitos reservados.',
+      copyrightText: config?.copyrightText || 'Rádio Maranata - Todos os direitos reservados.',
       socialMediaLinks: config?.socialMediaLinks || [],
       usefulLinks: config?.usefulLinks || [],
       useDynamicMetadata: config?.useDynamicMetadata === true,
       metadataUrl: config?.metadataUrl || '',
-      nowPlayingText: config?.nowPlayingText || 'Sintonizando Rádio Vida...'
+      nowPlayingText: config?.nowPlayingText || 'Sintonizando Rádio Maranata...'
     };
   }, [config]);
 
@@ -253,7 +253,7 @@ export default function Home() {
   const hasSocialLinks = siteConfig.showSocial && (showInsta || showFb || showYt);
   const usefulLinks = siteConfig.usefulLinks || [];
 
-  const rawAppName = siteConfig.appName || 'Rádio Vida';
+  const rawAppName = siteConfig.appName || 'Rádio Maranata';
   const nameParts = rawAppName.split(' ');
   const firstNamePart = nameParts[0];
   const restNameParts = nameParts.slice(1).join(' ');

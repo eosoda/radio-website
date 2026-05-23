@@ -1,4 +1,4 @@
-const CACHE_NAME = 'radio-vida-v1';
+const CACHE_NAME = 'radio-maranata-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json'
@@ -31,15 +31,28 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Requisições de navegação (HTML principal): Network First
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/'))
+    );
+    return;
+  }
+
+  // Outros recursos (CSS, JS, Imagens): Stale-While-Revalidate
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response;
-      }
-      return fetch(event.request).catch(() => {
-        // Fallback silencioso para falhas de rede (ex: ícones bloqueados)
-        return null;
-      });
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        // Atualiza o cache silenciosamente (exceto para extensões do chrome, etc)
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+        }
+        return networkResponse;
+      }).catch(() => null);
+
+      // Retorna do cache se existir, caso contrário aguarda a rede
+      return cachedResponse || fetchPromise;
     })
   );
 });

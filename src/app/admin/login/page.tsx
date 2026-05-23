@@ -50,7 +50,7 @@ export default function LoginPage() {
               <Radio className="h-8 w-8 text-secondary" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-headline text-secondary">Admin Vida</CardTitle>
+          <CardTitle className="text-3xl font-headline text-secondary">Admin Maranata</CardTitle>
           <p className="text-sm text-muted-foreground">Acesse para gerenciar sua rádio</p>
         </CardHeader>
         <CardContent>

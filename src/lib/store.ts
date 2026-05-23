@@ -29,7 +29,7 @@ export const useAudioStore = create<AudioState>()(
       volume: 0.6,
       isMuted: false,
       streamUrl: 'https://URL:PORT/stream/',
-      nowPlaying: 'Sintonizando Rádio Vida...',
+      nowPlaying: 'Sintonizando Rádio Maranata...',
       theme: 'system',
       _hasHydrated: false,
       
@@ -43,7 +43,7 @@ export const useAudioStore = create<AudioState>()(
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: 'radio-vida-audio-settings',
+      name: 'radio-maranata-audio-settings',
       partialize: (state) => ({ 
         volume: state.volume, 
         isMuted: state.isMuted,

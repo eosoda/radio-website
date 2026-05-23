@@ -198,6 +198,20 @@ function DynamicLayout({ children }: { children: React.ReactNode }) {
   const showBottomPlayer = config?.showBottomPlayer !== false;
 
   const styles = getCustomStyleTag(config);
+  const { theme, _hasHydrated } = useAudioStore();
+
+  useEffect(() => {
+    if (config) {
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor && _hasHydrated) {
+        const isDark = document.documentElement.classList.contains('dark');
+        const color = isDark 
+          ? (config.primaryColorDark || '#0b1317') 
+          : (config.primaryColorLight || '#264653');
+        metaThemeColor.setAttribute('content', color);
+      }
+    }
+  }, [config, theme, _hasHydrated]);
 
   return (
     <>
@@ -270,8 +284,8 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Rádio Vida" />
-        <link rel="apple-touch-icon" href="https://picsum.photos/seed/radio-vida-192/192/192" />
+        <meta name="apple-mobile-web-app-title" content="Rádio Maranata" />
+        <link rel="apple-touch-icon" href="https://picsum.photos/seed/radio-maranata-192/192/192" />
       </head>
       <body className="font-body antialiased min-h-screen flex flex-col">
         <FirebaseClientProvider>

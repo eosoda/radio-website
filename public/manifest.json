@@ -1,6 +1,6 @@
 {
-  "name": "Rádio Vida FM",
-  "short_name": "Rádio Vida",
+  "name": "Rádio Maranata FM",
+  "short_name": "Rádio Maranata",
   "description": "A Voz da Esperança - Transmitindo louvor e a palavra de Deus 24h.",
   "start_url": "/",
   "display": "standalone",
@@ -9,13 +9,13 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://picsum.photos/seed/radio-vida-192/192/192",
+      "src": "https://picsum.photos/seed/radio-maranata-192/192/192",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://picsum.photos/seed/radio-vida-512/512/512",
+      "src": "https://picsum.photos/seed/radio-maranata-512/512/512",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

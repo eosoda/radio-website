@@ -57,14 +57,14 @@ export default function AudioPlayer() {
 
   const streamUrl = config?.streamUrl || 'https://URL:PORT/stream/';
   const showNowPlaying = config?.showNowPlaying !== false;
-  const appName = config?.appName || 'Rádio Vida';
+  const appName = config?.appName || 'Rádio Maranata';
   const defaultVolume = config?.defaultVolume !== undefined ? config.defaultVolume : 0.6;
   const autoplayEnabled = config?.autoplay !== false;
 
   // Sincronização inicial de configurações
   useEffect(() => {
     if (isMounted && _hasHydrated && config && !configApplied.current) {
-      const savedSettings = localStorage.getItem('radio-vida-audio-settings');
+      const savedSettings = localStorage.getItem('radio-maranata-audio-settings');
       
       if (!savedSettings) {
         setVolume(defaultVolume);

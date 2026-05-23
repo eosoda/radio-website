@@ -190,7 +190,7 @@ export default function AdminDashboard() {
       }] : []));
     } else if (!isConfigLoading) {
       setLocalConfig({
-        appName: 'Rádio Vida',
+        appName: 'Rádio Maranata',
         slogan: 'A Voz da Esperança 24h',
         logoImageUrl: '',
         logoSize: 320,
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
         useDynamicMetadata: true,
         defaultVolume: 0.6,
         defaultTheme: 'dark',
-        nowPlayingText: 'Sintonizando Rádio Vida...',
+        nowPlayingText: 'Sintonizando Rádio Maranata...',
         aboutBadge: 'Nossa Identidade',
         aboutTitle: 'Levando Esperança através das Ondas',
         aboutText: 'Levando a palavra de Deus a todos os lares através do louvor e da edificação espiritual.',
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
         showYoutube: true,
         showUsefulLinks: true,
         showContact: true,
-        copyrightText: 'Rádio Vida - Todos os direitos reservados.',
+        copyrightText: 'Rádio Maranata - Todos os direitos reservados.',
         socialMediaLinks: ['', '', ''],
         usefulLinks: [],
         showBottomPlayer: true,
@@ -508,7 +508,7 @@ export default function AdminDashboard() {
     <div className="flex flex-col h-full py-4 px-2 space-y-6">
       <div className="flex items-center gap-2 px-4 text-xl font-headline text-secondary">
         <RadioIcon className="h-6 w-6" />
-        <span>Admin Vida</span>
+        <span>Admin Maranata</span>
       </div>
       <nav className="flex-1 space-y-1">
         <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-secondary/10 hover:text-secondary bg-secondary/5 text-secondary">
