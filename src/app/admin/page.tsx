@@ -245,6 +245,13 @@ export default function AdminDashboard() {
         verseAlign: 'text-center',
         verseTextColor: '',
         verseBgOpacity: 5,
+        verseBoxWidth: 'max-w-4xl',
+        verseBoxPadding: 'py-24 px-8',
+        verseBoxRadius: 'rounded-[3rem]',
+        verseBgColor: '',
+        verseIcon: 'Music',
+        verseBorderWidth: 'border',
+        verseBorderColor: '',
         showAbout: true,
         showProgramacao: true,
         showVersiculo: true,
@@ -271,7 +278,14 @@ export default function AdminDashboard() {
         primaryColorDark: '#264653',
         secondaryColorDark: '#00c7a9',
         backgroundColorDark: '#0b1317',
-        textColorDark: '#f1f5f9'
+        textColorDark: '#f1f5f9',
+        verseBoxWidth: 'max-w-4xl',
+        verseBoxPadding: 'py-24 px-8',
+        verseBoxRadius: 'rounded-[3rem]',
+        verseBgColor: '',
+        verseIcon: 'Music',
+        verseBorderWidth: 'border',
+        verseBorderColor: ''
       });
     }
   }, [config, isConfigLoading]);
@@ -301,7 +315,14 @@ export default function AdminDashboard() {
       verseFontFamily: localConfig.verseFontFamily || 'font-headline',
       verseAlign: localConfig.verseAlign || 'text-center',
       verseTextColor: localConfig.verseTextColor || '',
-      verseBgOpacity: localConfig.verseBgOpacity !== undefined ? localConfig.verseBgOpacity : 5
+      verseBgOpacity: localConfig.verseBgOpacity !== undefined ? localConfig.verseBgOpacity : 5,
+      verseBoxWidth: localConfig.verseBoxWidth || 'max-w-4xl',
+      verseBoxPadding: localConfig.verseBoxPadding || 'py-24 px-8',
+      verseBoxRadius: localConfig.verseBoxRadius || 'rounded-[3rem]',
+      verseBgColor: localConfig.verseBgColor || '',
+      verseIcon: localConfig.verseIcon || 'Music',
+      verseBorderWidth: localConfig.verseBorderWidth || 'border',
+      verseBorderColor: localConfig.verseBorderColor || ''
     };
     
     setDocumentNonBlocking(configRef, updatedConfig, { merge: true });
@@ -886,6 +907,110 @@ export default function AdminDashboard() {
                             />
                           </div>
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 border-t border-white/5">
+                          <div className="space-y-2">
+                            <Label className="text-xs">Largura da Caixa</Label>
+                            <Select value={localConfig?.verseBoxWidth || 'max-w-4xl'} onValueChange={v => setLocalConfig({...localConfig, verseBoxWidth: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="max-w-2xl">Estreita</SelectItem>
+                                <SelectItem value="max-w-4xl">Padrão</SelectItem>
+                                <SelectItem value="max-w-6xl">Larga</SelectItem>
+                                <SelectItem value="max-w-full">Máxima</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Espaçamento Interno (Padding)</Label>
+                            <Select value={localConfig?.verseBoxPadding || 'py-24 px-8'} onValueChange={v => setLocalConfig({...localConfig, verseBoxPadding: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="py-8 px-4">Pequeno</SelectItem>
+                                <SelectItem value="py-16 px-6">Médio</SelectItem>
+                                <SelectItem value="py-24 px-8">Grande (Padrão)</SelectItem>
+                                <SelectItem value="py-32 px-12">Extra Grande</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Arredondamento</Label>
+                            <Select value={localConfig?.verseBoxRadius || 'rounded-[3rem]'} onValueChange={v => setLocalConfig({...localConfig, verseBoxRadius: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="rounded-none">Reto</SelectItem>
+                                <SelectItem value="rounded-xl">Arredondado</SelectItem>
+                                <SelectItem value="rounded-[3rem]">Pílula (Padrão)</SelectItem>
+                                <SelectItem value="rounded-full">Circular (Extremo)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Espessura da Borda</Label>
+                            <Select value={localConfig?.verseBorderWidth || 'border'} onValueChange={v => setLocalConfig({...localConfig, verseBorderWidth: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="border-0">Sem borda</SelectItem>
+                                <SelectItem value="border">Fina (Padrão)</SelectItem>
+                                <SelectItem value="border-2">Média</SelectItem>
+                                <SelectItem value="border-4">Grossa</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Cor da Borda (Opcional)</Label>
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="color" 
+                                value={localConfig?.verseBorderColor || '#ffffff'} 
+                                onChange={e => setLocalConfig({...localConfig, verseBorderColor: e.target.value})}
+                                className="h-10 w-10 cursor-pointer rounded-md border border-white/10"
+                              />
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => setLocalConfig({...localConfig, verseBorderColor: ''})}
+                                className="h-10 border-white/10 text-xs"
+                              >
+                                Padrão
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Cor de Fundo Base (Opcional)</Label>
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="color" 
+                                value={localConfig?.verseBgColor || '#00c7a9'} 
+                                onChange={e => setLocalConfig({...localConfig, verseBgColor: e.target.value})}
+                                className="h-10 w-10 cursor-pointer rounded-md border border-white/10"
+                              />
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => setLocalConfig({...localConfig, verseBgColor: ''})}
+                                className="h-10 border-white/10 text-xs"
+                              >
+                                Padrão (Tema)
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs">Ícone Decorativo</Label>
+                            <Select value={localConfig?.verseIcon || 'Music'} onValueChange={v => setLocalConfig({...localConfig, verseIcon: v})}>
+                              <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {ICON_OPTIONS.map(opt => (
+                                  <SelectItem key={opt.value} value={opt.value}>
+                                    <div className="flex items-center gap-2">
+                                      <opt.icon className="h-4 w-4" />
+                                      {opt.label}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
 
@@ -896,14 +1021,24 @@ export default function AdminDashboard() {
                       </CardHeader>
                       <CardContent className="p-0">
                         <div 
-                          className="relative py-12 px-8 flex items-center justify-center transition-all duration-300"
+                          className={cn(
+                            "relative flex items-center justify-center transition-all duration-300 shadow-[inset_0_0_100px_rgba(38,70,83,0.05)] mx-auto",
+                            localConfig?.verseBoxPadding || 'py-24 px-8',
+                            localConfig?.verseBoxRadius || 'rounded-[3rem]',
+                            localConfig?.verseBoxWidth || 'max-w-4xl',
+                            localConfig?.verseBorderWidth || 'border',
+                            !localConfig?.verseBorderColor && "border-secondary/20"
+                          )}
                           style={{
-                            backgroundColor: `rgba(0, 199, 169, ${(localConfig?.verseBgOpacity !== undefined ? localConfig?.verseBgOpacity : 5) / 100})`
+                            backgroundColor: localConfig?.verseBgColor 
+                              ? `rgba(${hexToRgb(localConfig.verseBgColor).r}, ${hexToRgb(localConfig.verseBgColor).g}, ${hexToRgb(localConfig.verseBgColor).b}, ${(localConfig?.verseBgOpacity !== undefined ? localConfig?.verseBgOpacity : 5) / 100})`
+                              : `rgba(0, 199, 169, ${(localConfig?.verseBgOpacity !== undefined ? localConfig?.verseBgOpacity : 5) / 100})`,
+                            borderColor: localConfig?.verseBorderColor || undefined
                           }}
                         >
                           <div className={cn("relative z-10 w-full space-y-6", localConfig?.verseAlign || "text-center")}>
                              <div className={cn("inline-block p-4 rounded-full bg-secondary/10", (localConfig?.verseAlign || "text-center") === "text-center" ? "mx-auto" : "")}>
-                                <Music className="h-6 w-6 text-secondary" />
+                                <DynamicIcon name={localConfig?.verseIcon || 'Music'} className="h-6 w-6 text-secondary" />
                              </div>
                              <h3 
                                className={cn(

@@ -128,6 +128,11 @@
   animation: hero-bar-grow 1s ease-in-out infinite;
 }
 
+/* Esconde o loader instantaneamente se os estilos já estiverem em cache (previne FOUC loader) */
+html.has-cached-styles .app-loader {
+  display: none !important;
+}
+
 /* Light mode specific accessibility fixes for borders & translucent backgrounds */
 .light {
   .border-white\/5 {

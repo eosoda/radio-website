@@ -717,14 +717,27 @@ export default function Home() {
             {/* Verse of the day */}
             {siteConfig.showVersiculo && (
               <section 
-                className="relative py-24 px-8 flex items-center justify-center rounded-[3rem] border border-secondary/20 overflow-hidden group shadow-[inset_0_0_100px_rgba(38,70,83,0.05)] transition-all duration-300"
+                className={cn(
+                  "relative flex items-center justify-center transition-all duration-300 shadow-[inset_0_0_100px_rgba(38,70,83,0.05)] mx-auto overflow-hidden group",
+                  siteConfig.verseBoxPadding || 'py-24 px-8',
+                  siteConfig.verseBoxRadius || 'rounded-[3rem]',
+                  siteConfig.verseBoxWidth || 'max-w-4xl',
+                  siteConfig.verseBorderWidth || 'border',
+                  !siteConfig.verseBorderColor && "border-secondary/20"
+                )}
                 style={{
-                  backgroundColor: `rgba(0, 199, 169, ${(siteConfig.verseBgOpacity) / 100})`
+                  backgroundColor: siteConfig.verseBgColor 
+                    ? `rgba(${hexToRgb(siteConfig.verseBgColor).r}, ${hexToRgb(siteConfig.verseBgColor).g}, ${hexToRgb(siteConfig.verseBgColor).b}, ${(siteConfig.verseBgOpacity !== undefined ? siteConfig.verseBgOpacity : 5) / 100})`
+                    : `rgba(0, 199, 169, ${(siteConfig.verseBgOpacity !== undefined ? siteConfig.verseBgOpacity : 5) / 100})`,
+                  borderColor: siteConfig.verseBorderColor || undefined
                 }}
               >
-                 <div className={cn("relative z-10 w-full max-w-4xl space-y-8", siteConfig.verseAlign)}>
+                 <div className={cn("relative z-10 w-full space-y-8", siteConfig.verseAlign)}>
                    <div className={cn("inline-block p-4 rounded-full bg-secondary/10 animate-bounce", siteConfig.verseAlign === "text-center" ? "mx-auto" : "")}>
-                      <Music className="h-8 w-8 text-secondary" />
+                      {(() => {
+                        const IconComponent = siteConfig.verseIcon ? (LucideIcons as any)[siteConfig.verseIcon] : null;
+                        return IconComponent ? <IconComponent className="h-8 w-8 text-secondary" /> : <Music className="h-8 w-8 text-secondary" />;
+                      })()}
                    </div>
                    
                    {/* Envoltório para animação suave */}

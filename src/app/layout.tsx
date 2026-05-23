@@ -185,7 +185,9 @@ function getCustomStyleTag(config: any) {
 function DynamicLayout({ children }: { children: React.ReactNode }) {
   const db = useFirestore();
   const configRef = useMemoFirebase(() => doc(db, 'config', 'main'), [db]);
-  const { data: config } = useDoc(configRef);
+  const { data: config, isLoading } = useDoc(configRef);
+
+
 
   useEffect(() => {
     if (config?.appName) {
@@ -226,6 +228,8 @@ function DynamicLayout({ children }: { children: React.ReactNode }) {
         // as React has already rendered the fresh styles below.
         const cached = document.getElementById('cached-theme-styles');
         if (cached) cached.remove();
+        // Remove also the class so it doesn't conflict anymore
+        document.documentElement.classList.remove('has-cached-styles');
       } catch (e) {}
     }
   }, [styles]);
@@ -233,7 +237,14 @@ function DynamicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       {styles && <style dangerouslySetInnerHTML={{ __html: styles }} />}
-      <div className={cn("flex-1 flex flex-col w-full", !isMaintenance && showBottomPlayer && "pb-24")}>
+      
+      {/* Oculto via CSS (globals.css) se houver cache, ou oculto via React quando carregar */}
+      <div className={cn("fixed inset-0 flex flex-col items-center justify-center bg-background z-[100] space-y-4 app-loader", !isLoading && "hidden")}>
+        <div className="animate-spin w-12 h-12 border-4 border-secondary/20 border-t-secondary rounded-full" />
+        <p className="text-muted-foreground text-sm font-medium animate-pulse">Carregando Rádio...</p>
+      </div>
+
+      <div className={cn("flex-1 flex flex-col w-full animate-in fade-in duration-500", !isMaintenance && showBottomPlayer && "pb-24")}>
         {children}
       </div>
       {!isMaintenance && showBottomPlayer && <AudioPlayer />}
@@ -309,6 +320,7 @@ export default function RootLayout({
               try {
                 var cachedStyles = localStorage.getItem('radio-maranata-brand-styles');
                 if (cachedStyles) {
+                  document.documentElement.classList.add('has-cached-styles');
                   document.write('<style id="cached-theme-styles">' + cachedStyles + '</style>');
                 }
                 var cachedThemeColor = localStorage.getItem('radio-maranata-theme-color');
