@@ -1985,54 +1985,64 @@ export default function AdminDashboard() {
                    </div>
 
                    <div className="pt-6 border-t border-white/5 space-y-4">
-                     <Label className="text-sm font-bold">Links Úteis</Label>
-                     <div className="flex flex-col gap-2">
-                       <input placeholder="Nome" value={newLink.label} onChange={e => setNewLink({...newLink, label: e.target.value})} className="flex h-10 w-full rounded-md border border-white/10 bg-background px-3 py-2 text-sm" />
-                       <input placeholder="URL" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="flex h-10 w-full rounded-md border border-white/10 bg-background px-3 py-2 text-sm" />
-                       <Button variant="secondary" onClick={handleAddUsefulLink} className="w-full gap-2">
-                         {editingLinkIndex !== null ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                         {editingLinkIndex !== null ? "Atualizar Link" : "Adicionar Link"}
-                       </Button>
+                     <div className="flex items-center justify-between">
+                       <Label className="text-sm font-bold">Links Úteis</Label>
+                       <Switch 
+                         checked={localConfig.showUsefulLinks !== false} 
+                         onCheckedChange={v => setLocalConfig({...localConfig, showUsefulLinks: v})} 
+                       />
                      </div>
-                     <div className="mt-4 border rounded-lg overflow-hidden border-white/5">
-                        <Table>
-                          <TableBody>
-                            {usefulLinks.map((link, idx) => (
-                              <TableRow key={idx}>
-                                <TableCell className="font-medium text-xs truncate max-w-[150px]">{link.label}</TableCell>
-                                <TableCell className="text-right">
-                                  <div className="flex justify-end gap-1">
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      onClick={() => handleMoveLink(idx, 'up')} 
-                                      disabled={idx === 0}
-                                      className="h-8 w-8 text-secondary"
-                                    >
-                                      <ArrowUp className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      onClick={() => handleMoveLink(idx, 'down')} 
-                                      disabled={idx === usefulLinks.length - 1}
-                                      className="h-8 w-8 text-secondary"
-                                    >
-                                      <ArrowDown className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" onClick={() => handleEditUsefulLink(idx)} className="h-8 w-8 text-secondary">
-                                      <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveUsefulLink(idx)} className="text-destructive h-8 w-8">
-                                      <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                     </div>
+                     {localConfig.showUsefulLinks !== false && (
+                       <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                         <div className="flex flex-col gap-2">
+                           <input placeholder="Nome" value={newLink.label} onChange={e => setNewLink({...newLink, label: e.target.value})} className="flex h-10 w-full rounded-md border border-white/10 bg-background px-3 py-2 text-sm" />
+                           <input placeholder="URL" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="flex h-10 w-full rounded-md border border-white/10 bg-background px-3 py-2 text-sm" />
+                           <Button variant="secondary" onClick={handleAddUsefulLink} className="w-full gap-2">
+                             {editingLinkIndex !== null ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                             {editingLinkIndex !== null ? "Atualizar Link" : "Adicionar Link"}
+                           </Button>
+                         </div>
+                         <div className="mt-4 border rounded-lg overflow-hidden border-white/5">
+                            <Table>
+                              <TableBody>
+                                {usefulLinks.map((link, idx) => (
+                                  <TableRow key={idx}>
+                                    <TableCell className="font-medium text-xs truncate max-w-[150px]">{link.label}</TableCell>
+                                    <TableCell className="text-right">
+                                      <div className="flex justify-end gap-1">
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          onClick={() => handleMoveLink(idx, 'up')} 
+                                          disabled={idx === 0}
+                                          className="h-8 w-8 text-secondary"
+                                        >
+                                          <ArrowUp className="h-4 w-4" />
+                                        </Button>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          onClick={() => handleMoveLink(idx, 'down')} 
+                                          disabled={idx === usefulLinks.length - 1}
+                                          className="h-8 w-8 text-secondary"
+                                        >
+                                          <ArrowDown className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" onClick={() => handleEditUsefulLink(idx)} className="h-8 w-8 text-secondary">
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" onClick={() => handleRemoveUsefulLink(idx)} className="text-destructive h-8 w-8">
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                         </div>
+                       </div>
+                     )}
                    </div>
                 </CardContent>
               </Card>
