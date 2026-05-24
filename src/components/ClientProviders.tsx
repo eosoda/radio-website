@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { FirebaseClientProvider } from '@/firebase';
+import { usePathname } from 'next/navigation';
 import { Toaster } from '@/components/ui/toaster';
 import AudioPlayer from '@/components/AudioPlayer';
 import DynamicBackground from '@/components/DynamicBackground';
@@ -18,6 +19,8 @@ export function ClientProviders({
   initialThemeColor: string;
 }) {
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith('/admin');
   const { theme, _hasHydrated } = useAudioStore();
 
   useEffect(() => {
@@ -77,11 +80,11 @@ export function ClientProviders({
 
   return (
     <FirebaseClientProvider>
-      <div className={cn("flex-1 flex flex-col w-full animate-in fade-in duration-500", showBottomPlayer && "pb-24")}>
+      <div className={cn("flex-1 flex flex-col w-full animate-in fade-in duration-500", showBottomPlayer && !isAdmin && "pb-24")}>
         <DynamicBackground />
         {children}
       </div>
-      {showBottomPlayer && <AudioPlayer />}
+      {showBottomPlayer && !isAdmin && <AudioPlayer />}
       <Toaster />
     </FirebaseClientProvider>
   );
