@@ -280,7 +280,11 @@ export default async function Home() {
                 alt="Hero Background"
                 fill
                 style={{ opacity: siteConfig.heroBgOpacity }}
-                className={cn("object-cover", siteConfig.heroAnimation === 'ken-burns' ? 'animate-ken-burns' : 'scale-105')}
+                className={cn(
+                  "object-cover", 
+                  siteConfig.heroAnimation === 'ken-burns' ? 'animate-ken-burns' : 
+                  siteConfig.heroAnimation === 'none' ? '' : 'scale-105'
+                )}
                 priority
               />
               <div 

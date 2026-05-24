@@ -222,7 +222,8 @@ export default function AdminDashboard() {
         heroBgOpacity: 0.2,
         heroOverlayOpacity: 0.6,
         heroLayout: 'classic',
-        heroAnimation: 'none',
+        heroAnimation: 'scale',
+        globalAnimations: 'enabled',
         heroOverlayStyle: 'classic',
         heroBadge1Text: 'AO VIVO 24H',
         heroBadge1Icon: 'Clock',
@@ -326,6 +327,7 @@ export default function AdminDashboard() {
       versesMarginBottomMobile: localConfig.versesMarginBottomMobile || '',
       versesMarginTopDesktop: localConfig.versesMarginTopDesktop || '',
       versesMarginBottomDesktop: localConfig.versesMarginBottomDesktop || '',
+      globalAnimations: localConfig.globalAnimations || 'enabled',
       heroBgOpacity: localConfig.heroBgOpacity !== undefined ? localConfig.heroBgOpacity : 0.2,
       heroOverlayOpacity: localConfig.heroOverlayOpacity !== undefined ? localConfig.heroOverlayOpacity : 0.6,
       heroLayout: localConfig.heroLayout || 'classic',
@@ -362,6 +364,7 @@ export default function AdminDashboard() {
       textColorDark: '#f1f5f9',
       fontTheme: 'classic',
       themeEnforcement: 'free',
+      globalAnimations: 'enabled',
       sectionSpacing: 'normal',
       aboutMarginTopMobile: '',
       aboutMarginBottomMobile: '',
@@ -1410,6 +1413,22 @@ export default function AdminDashboard() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-bold block mb-2">Animações Globais</Label>
+                      <Select 
+                        value={localConfig.globalAnimations || 'enabled'} 
+                        onValueChange={v => setLocalConfig({...localConfig, globalAnimations: v})}
+                      >
+                        <SelectTrigger className="bg-background/50">
+                          <SelectValue placeholder="Animações" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="enabled">Ativadas (Fade In, Slide)</SelectItem>
+                          <SelectItem value="disabled">Desativadas (Sem nenhum efeito)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1640,17 +1659,18 @@ export default function AdminDashboard() {
                       </div>
                       
                       <div className="space-y-2">
-                        <Label className="text-xs">Animação de Fundo</Label>
+                        <Label className="text-xs">Efeito de Fundo (Hero)</Label>
                         <Select 
-                          value={localConfig?.heroAnimation || 'none'} 
+                          value={localConfig?.heroAnimation || 'scale'} 
                           onValueChange={(val) => setLocalConfig({...localConfig, heroAnimation: val})}
                         >
                           <SelectTrigger className="bg-background/50 border-white/10">
                             <SelectValue placeholder="Sem Animação" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">Estático (Padrão)</SelectItem>
                             <SelectItem value="ken-burns">Efeito Ken Burns (Zoom Cinematográfico)</SelectItem>
+                            <SelectItem value="scale">Zoom Estático Leve (Padrão)</SelectItem>
+                            <SelectItem value="none">Desativado (Sem nenhum efeito, Imagem original)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>

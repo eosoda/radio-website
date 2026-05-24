@@ -189,5 +189,14 @@ export function getCustomStyleTag(config: any) {
       background: rgba(11, 19, 23, 0.6) !important;
       border: 1px solid rgba(${rgbPD.r}, ${rgbPD.g}, ${rgbPD.b}, 0.1) !important;
     }
+
+    ${config.globalAnimations === 'disabled' ? `
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    ` : ''}
   `;
 }
