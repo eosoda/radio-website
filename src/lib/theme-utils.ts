@@ -138,6 +138,16 @@ export function getCustomStyleTag(config: any) {
       --border: ${borderLightStr};
       --input: ${inputLightStr};
       --ring: ${ringLightStr};
+      ${config.fontTheme === 'modern' ? `
+      --font-headline: "Outfit", sans-serif;
+      --font-body: "Inter", sans-serif;
+      ` : config.fontTheme === 'impact' ? `
+      --font-headline: "Montserrat", sans-serif;
+      --font-body: "Montserrat", sans-serif;
+      ` : `
+      --font-headline: "Playfair Display", serif;
+      --font-body: "PT Sans", sans-serif;
+      `}
     }
 
     .light .teal-glass {
@@ -163,6 +173,16 @@ export function getCustomStyleTag(config: any) {
       --border: ${borderDarkStr};
       --input: ${inputDarkStr};
       --ring: ${ringDarkStr};
+      ${config.fontTheme === 'modern' ? `
+      --font-headline: "Outfit", sans-serif;
+      --font-body: "Inter", sans-serif;
+      ` : config.fontTheme === 'impact' ? `
+      --font-headline: "Montserrat", sans-serif;
+      --font-body: "Montserrat", sans-serif;
+      ` : `
+      --font-headline: "Playfair Display", serif;
+      --font-body: "PT Sans", sans-serif;
+      `}
     }
     
     .dark .teal-glass {

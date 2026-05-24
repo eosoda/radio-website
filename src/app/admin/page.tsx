@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { hexToRgb } from '@/lib/theme-utils';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -160,6 +161,10 @@ export default function AdminDashboard() {
   });
   const [editingNoticeId, setEditingNoticeId] = useState<string | null>(null);
 
+  const [draggedModuleIndex, setDraggedModuleIndex] = useState<number | null>(null);
+  const [draggedLinkIndex, setDraggedLinkIndex] = useState<number | null>(null);
+  const [draggedNoticeIndex, setDraggedNoticeIndex] = useState<number | null>(null);
+
   useEffect(() => {
     if (config) {
       setLocalConfig({
@@ -207,6 +212,8 @@ export default function AdminDashboard() {
         noticeBarFixed: false,
         noticeBarText: '',
         noticeBarIcon: 'Megaphone',
+        homeModulesOrder: ['about', 'schedule', 'verses'],
+        sectionSpacing: 'normal',
         noticeBarExpiresAt: '',
         noticeBarLinkText: '',
         noticeBarLinkUrl: '',
@@ -215,6 +222,8 @@ export default function AdminDashboard() {
         heroBgOpacity: 0.2,
         heroOverlayOpacity: 0.6,
         heroLayout: 'classic',
+        heroAnimation: 'none',
+        heroOverlayStyle: 'classic',
         heroBadge1Text: 'AO VIVO 24H',
         heroBadge1Icon: 'Clock',
         heroBadge2Text: 'LOUVOR & ADORAÇÃO',
@@ -232,6 +241,8 @@ export default function AdminDashboard() {
         aboutText: 'Levando a palavra de Deus a todos os lares através do louvor e da edificação espiritual.',
         aboutImageUrl: '',
         showAboutImage: true,
+        aboutLayout: 'right-image',
+        aboutBgStyle: 'transparent',
         verseText: '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
         versesList: [
           '"Lâmpada para os meus pés é tua palavra, e luz para o meu caminho." - Salmos 119:105',
@@ -260,8 +271,10 @@ export default function AdminDashboard() {
         showFooter: true,
         showFooterDescription: true,
         footerDescription: 'Levando o evangelho através das ondas sonoras. Uma rádio comprometida com a verdade bíblica e o amor de Cristo para todos os lares.',
-        footerStatusText: 'Transmitindo Esperança 24h',
+        footerStatusText: 'Estamos online 24h levando a palavra de Deus.',
         footerStatusIcon: 'Radio',
+        footerStyle: 'glass',
+        footerAlign: 'left',
         showSocial: true,
         showInstagram: true,
         showFacebook: true,
@@ -280,13 +293,6 @@ export default function AdminDashboard() {
         secondaryColorDark: '#00c7a9',
         backgroundColorDark: '#0b1317',
         textColorDark: '#f1f5f9',
-        verseBoxWidth: 'max-w-4xl',
-        verseBoxPadding: 'py-24 px-8',
-        verseBoxRadius: 'rounded-[3rem]',
-        verseBgColor: '',
-        verseIcon: 'Music',
-        verseBorderWidth: 'border',
-        verseBorderColor: ''
       });
     }
   }, [config, isConfigLoading]);
@@ -308,6 +314,18 @@ export default function AdminDashboard() {
       noticeBarExpiresAt: firstNotice ? firstNotice.expiresAt : '',
       noticeBarLinkText: firstNotice ? firstNotice.linkText : '',
       noticeBarLinkUrl: firstNotice ? firstNotice.linkUrl : '',
+      aboutMarginTopMobile: localConfig.aboutMarginTopMobile || '',
+      aboutMarginBottomMobile: localConfig.aboutMarginBottomMobile || '',
+      aboutMarginTopDesktop: localConfig.aboutMarginTopDesktop || '',
+      aboutMarginBottomDesktop: localConfig.aboutMarginBottomDesktop || '',
+      scheduleMarginTopMobile: localConfig.scheduleMarginTopMobile || '',
+      scheduleMarginBottomMobile: localConfig.scheduleMarginBottomMobile || '',
+      scheduleMarginTopDesktop: localConfig.scheduleMarginTopDesktop || '',
+      scheduleMarginBottomDesktop: localConfig.scheduleMarginBottomDesktop || '',
+      versesMarginTopMobile: localConfig.versesMarginTopMobile || '',
+      versesMarginBottomMobile: localConfig.versesMarginBottomMobile || '',
+      versesMarginTopDesktop: localConfig.versesMarginTopDesktop || '',
+      versesMarginBottomDesktop: localConfig.versesMarginBottomDesktop || '',
       heroBgOpacity: localConfig.heroBgOpacity !== undefined ? localConfig.heroBgOpacity : 0.2,
       heroOverlayOpacity: localConfig.heroOverlayOpacity !== undefined ? localConfig.heroOverlayOpacity : 0.6,
       heroLayout: localConfig.heroLayout || 'classic',
@@ -328,6 +346,37 @@ export default function AdminDashboard() {
     
     setDocumentNonBlocking(configRef, updatedConfig, { merge: true });
     toast({ title: "Configuração Salva", description: "As alterações foram aplicadas imediatamente." });
+  };
+
+  const handleResetDesign = () => {
+    if (!localConfig) return;
+    setLocalConfig({
+      ...localConfig,
+      primaryColorLight: '#264653',
+      secondaryColorLight: '#008f7a',
+      backgroundColorLight: '#f1f5f9',
+      textColorLight: '#0f1e24',
+      primaryColorDark: '#264653',
+      secondaryColorDark: '#00c7a9',
+      backgroundColorDark: '#0b1317',
+      textColorDark: '#f1f5f9',
+      fontTheme: 'classic',
+      themeEnforcement: 'free',
+      sectionSpacing: 'normal',
+      aboutMarginTopMobile: '',
+      aboutMarginBottomMobile: '',
+      aboutMarginTopDesktop: '',
+      aboutMarginBottomDesktop: '',
+      scheduleMarginTopMobile: '',
+      scheduleMarginBottomMobile: '',
+      scheduleMarginTopDesktop: '',
+      scheduleMarginBottomDesktop: '',
+      versesMarginTopMobile: '',
+      versesMarginBottomMobile: '',
+      versesMarginTopDesktop: '',
+      versesMarginBottomDesktop: '',
+    });
+    toast({ title: "Design Restaurado", description: "As cores, fontes e espaçamentos voltaram ao padrão. Clique em 'Salvar' para confirmar." });
   };
 
   const handleAddProgram = () => {
@@ -407,6 +456,15 @@ export default function AdminDashboard() {
     
     [newLinks[index], newLinks[targetIndex]] = [newLinks[targetIndex], newLinks[index]];
     setUsefulLinks(newLinks);
+  };
+
+  const handleMoveModule = (index: number, direction: 'up' | 'down') => {
+    const arr = [...(localConfig.homeModulesOrder || ['about', 'schedule', 'verses'])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex >= 0 && targetIndex < arr.length) {
+      [arr[index], arr[targetIndex]] = [arr[targetIndex], arr[index]];
+      setLocalConfig({...localConfig, homeModulesOrder: arr});
+    }
   };
 
   const handleAddVerse = () => {
@@ -580,6 +638,95 @@ export default function AdminDashboard() {
     </div>
   );
 
+  const renderSpacingControls = (modulePrefix: 'about' | 'schedule' | 'verses', moduleName: string) => {
+    return (
+      <Card className="border-white/5 bg-card/30 mt-6">
+        <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-white/5">
+          <div>
+            <CardTitle className="text-secondary text-lg">Respiro e Espaçamento</CardTitle>
+            <CardDescription>Ajuste as margens do módulo "{moduleName}".</CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-white/10 text-xs h-8"
+            onClick={() => {
+              setLocalConfig({
+                ...localConfig,
+                [`${modulePrefix}MarginTopMobile`]: '',
+                [`${modulePrefix}MarginBottomMobile`]: '',
+                [`${modulePrefix}MarginTopDesktop`]: '',
+                [`${modulePrefix}MarginBottomDesktop`]: ''
+              });
+            }}
+          >
+            Resetar Módulo
+          </Button>
+        </CardHeader>
+        <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <h4 className="font-bold text-sm text-secondary flex items-center gap-2"><LucideIcons.Smartphone className="h-4 w-4" /> No Celular</h4>
+            <div className="space-y-2">
+              <Label className="text-xs">Distância Acima (Margin Top)</Label>
+              <Select value={localConfig?.[`${modulePrefix}MarginTopMobile`] || ''} onValueChange={v => setLocalConfig({...localConfig, [`${modulePrefix}MarginTopMobile`]: v})}>
+                <SelectTrigger className="bg-background/50"><SelectValue placeholder="Padrão" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mt-0">Sem distância (0px)</SelectItem>
+                  <SelectItem value="mt-8">Pequena (32px)</SelectItem>
+                  <SelectItem value="mt-16">Média (64px)</SelectItem>
+                  <SelectItem value="mt-24">Grande (96px)</SelectItem>
+                  <SelectItem value="mt-32">Extra Grande (128px)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Distância Abaixo (Margin Bottom)</Label>
+              <Select value={localConfig?.[`${modulePrefix}MarginBottomMobile`] || ''} onValueChange={v => setLocalConfig({...localConfig, [`${modulePrefix}MarginBottomMobile`]: v})}>
+                <SelectTrigger className="bg-background/50"><SelectValue placeholder="Padrão" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mb-0">Sem distância (0px)</SelectItem>
+                  <SelectItem value="mb-8">Pequena (32px)</SelectItem>
+                  <SelectItem value="mb-16">Média (64px)</SelectItem>
+                  <SelectItem value="mb-24">Grande (96px)</SelectItem>
+                  <SelectItem value="mb-32">Extra Grande (128px)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h4 className="font-bold text-sm text-secondary flex items-center gap-2"><LucideIcons.Monitor className="h-4 w-4" /> No Computador</h4>
+            <div className="space-y-2">
+              <Label className="text-xs">Distância Acima (Margin Top)</Label>
+              <Select value={localConfig?.[`${modulePrefix}MarginTopDesktop`] || ''} onValueChange={v => setLocalConfig({...localConfig, [`${modulePrefix}MarginTopDesktop`]: v})}>
+                <SelectTrigger className="bg-background/50"><SelectValue placeholder="Padrão" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="md:mt-0">Sem distância (0px)</SelectItem>
+                  <SelectItem value="md:mt-16">Pequena (64px)</SelectItem>
+                  <SelectItem value="md:mt-32">Média (128px)</SelectItem>
+                  <SelectItem value="md:mt-48">Grande (192px)</SelectItem>
+                  <SelectItem value="md:mt-64">Extra Grande (256px)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Distância Abaixo (Margin Bottom)</Label>
+              <Select value={localConfig?.[`${modulePrefix}MarginBottomDesktop`] || ''} onValueChange={v => setLocalConfig({...localConfig, [`${modulePrefix}MarginBottomDesktop`]: v})}>
+                <SelectTrigger className="bg-background/50"><SelectValue placeholder="Padrão" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="md:mb-0">Sem distância (0px)</SelectItem>
+                  <SelectItem value="md:mb-16">Pequena (64px)</SelectItem>
+                  <SelectItem value="md:mb-32">Média (128px)</SelectItem>
+                  <SelectItem value="md:mb-48">Grande (192px)</SelectItem>
+                  <SelectItem value="md:mb-64">Extra Grande (256px)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="flex-1 bg-background flex flex-col md:flex-row overflow-hidden w-full">
       <aside className="w-64 border-r border-white/5 bg-card/50 hidden md:flex flex-col">
@@ -652,32 +799,32 @@ export default function AdminDashboard() {
               <TabsTrigger value="geral" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <Info className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Geral</span>
               </TabsTrigger>
-              <TabsTrigger value="versiculos" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                 <BookOpen className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Versículos</span>
+              <TabsTrigger value="visibility" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <Settings className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Módulos</span>
               </TabsTrigger>
               <TabsTrigger value="design" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <Palette className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Design</span>
               </TabsTrigger>
-              <TabsTrigger value="programacao" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                 <ListMusic className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Programação</span>
-              </TabsTrigger>
-              <TabsTrigger value="avisos" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                 <Megaphone className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Avisos</span>
+              <TabsTrigger value="player" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <RadioIcon className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Player</span>
               </TabsTrigger>
               <TabsTrigger value="about" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <BookOpen className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Sobre</span>
               </TabsTrigger>
-              <TabsTrigger value="player" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                 <RadioIcon className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Player</span>
-              </TabsTrigger>
               <TabsTrigger value="schedule" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <ListMusic className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Grade</span>
               </TabsTrigger>
+              <TabsTrigger value="programacao" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <Palette className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Estilo Grade</span>
+              </TabsTrigger>
+              <TabsTrigger value="versiculos" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <BookOpen className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Versículos</span>
+              </TabsTrigger>
+              <TabsTrigger value="avisos" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <Megaphone className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Avisos</span>
+              </TabsTrigger>
               <TabsTrigger value="footer" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <LayoutDashboard className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Rodapé</span>
-              </TabsTrigger>
-              <TabsTrigger value="visibility" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                 <Settings className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Módulos</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1062,6 +1209,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
+              {renderSpacingControls('verses', 'Versículos')}
             </TabsContent>
 
             <TabsContent value="programacao" className="space-y-6 animate-in fade-in duration-300">
@@ -1072,6 +1220,17 @@ export default function AdminDashboard() {
                     <CardDescription>Customize o visual dos cartões de programação.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Estrutura do Layout</Label>
+                      <Select value={localConfig?.programLayout || 'grid'} onValueChange={v => setLocalConfig({...localConfig, programLayout: v})}>
+                        <SelectTrigger className="bg-background/50 border-white/10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="grid">Grade Vertical (Empilhado)</SelectItem>
+                          <SelectItem value="carousel">Carrossel Horizontal (Deslizar)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
                     <div className="space-y-2">
                       <Label className="text-xs">Estilo do Cartão</Label>
                       <Select value={localConfig?.programStyle || 'glass'} onValueChange={v => setLocalConfig({...localConfig, programStyle: v})}>
@@ -1145,15 +1304,20 @@ export default function AdminDashboard() {
                 {/* Preview Card */}
                 <div className="space-y-4">
                   <h3 className="text-sm font-bold text-secondary flex items-center gap-2"><Eye className="h-4 w-4" /> Pré-Visualização</h3>
-                  <div className="p-8 bg-black/20 rounded-xl border border-white/5 flex items-center justify-center relative overflow-hidden">
+                  <div className={cn(
+                    "p-8 bg-black/20 rounded-xl border border-white/5 flex relative overflow-hidden",
+                    localConfig?.programLayout === 'carousel' ? "overflow-x-auto snap-x snap-mandatory hide-scrollbar justify-start" : "items-center justify-center"
+                  )}>
                     <div 
                       className={cn(
-                        "w-full max-w-sm p-8 space-y-6 transition-all duration-500 relative",
+                        "space-y-6 transition-all duration-500 relative",
+                        localConfig?.programLayout === 'carousel' ? "w-[85vw] sm:w-[350px] shrink-0 snap-center p-8" : "w-full max-w-sm p-8",
                         localConfig?.programRadius || 'rounded-2xl',
                         localConfig?.programTextAlign || 'text-left',
-                        localConfig?.programStyle === 'glass' ? "teal-glass border" : 
-                        localConfig?.programStyle === 'solid' ? "bg-card/90 border" : 
-                        localConfig?.programStyle === 'neon' ? "bg-background/80 border shadow-[0_0_20px_rgba(var(--secondary),0.4)]" : "bg-transparent border-b"
+                        localConfig?.programStyle === 'glass' ? `teal-glass ${localConfig?.programBorderWidth || 'border'}` : 
+                        localConfig?.programStyle === 'solid' ? `bg-card/90 ${localConfig?.programBorderWidth || 'border'}` : 
+                        localConfig?.programStyle === 'neon' ? `bg-background/80 ${localConfig?.programBorderWidth || 'border'} shadow-[0_0_20px_rgba(var(--secondary),0.4)]` : 
+                        `bg-transparent border-b ${localConfig?.programBorderWidth === 'border-0' ? 'border-b-0' : ''}`
                       )}
                       style={{
                         backgroundColor: localConfig?.programStyle === 'solid' ? (localConfig?.programBgColor || undefined) : undefined,
@@ -1178,17 +1342,76 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
+              {renderSpacingControls('schedule', 'Programação')}
             </TabsContent>
 
             <TabsContent value="design" className="space-y-6 animate-in fade-in duration-300">
               <Card className="border-white/5 bg-card/30">
-                <CardHeader>
-                  <CardTitle className="text-secondary text-lg flex items-center gap-2">
-                    <Palette className="h-5 w-5" /> Cores da Marca (Brand Colors)
-                  </CardTitle>
-                  <CardDescription>Configure as cores de identidade visual do seu site para o modo claro e escuro.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-secondary text-lg flex items-center gap-2">
+                      <Palette className="h-5 w-5" /> Cores da Marca (Brand Colors)
+                    </CardTitle>
+                    <CardDescription>Configure as cores de identidade visual do seu site para o modo claro e escuro.</CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleResetDesign} className="border-destructive/30 text-destructive hover:bg-destructive/10">
+                    Restaurar Padrões de Design
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-8">
+                  <div className="pt-2 pb-6 border-b border-white/5">
+                    <Label className="text-sm font-bold block mb-2">Espaçamento Global entre Seções (Respiro)</Label>
+                    <Select 
+                      value={localConfig.sectionSpacing || 'normal'} 
+                      onValueChange={v => setLocalConfig({...localConfig, sectionSpacing: v})}
+                    >
+                      <SelectTrigger className="bg-background/50 max-w-sm">
+                        <SelectValue placeholder="Selecione o espaçamento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="compact">Compacto (Mais conteúdo na tela)</SelectItem>
+                        <SelectItem value="normal">Normal (Padrão e Equilibrado)</SelectItem>
+                        <SelectItem value="relaxed">Relaxado (Elegante e Espaçoso)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-6 border-b border-white/5">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-bold block mb-2">Motor de Tipografia (Fontes)</Label>
+                      <Select 
+                        value={localConfig.fontTheme || 'classic'} 
+                        onValueChange={v => setLocalConfig({...localConfig, fontTheme: v})}
+                      >
+                        <SelectTrigger className="bg-background/50">
+                          <SelectValue placeholder="Selecione o estilo da fonte" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="classic">Clássica / Gospel (Playfair + PT Sans)</SelectItem>
+                          <SelectItem value="modern">Moderna / Pop (Outfit + Inter)</SelectItem>
+                          <SelectItem value="impact">Jovem / Rock (Montserrat)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-bold block mb-2">Controle Absoluto de Cores</Label>
+                      <Select 
+                        value={localConfig.themeEnforcement || 'free'} 
+                        onValueChange={v => setLocalConfig({...localConfig, themeEnforcement: v})}
+                      >
+                        <SelectTrigger className="bg-background/50">
+                          <SelectValue placeholder="Forçar Tema" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="free">Livre (Ouvinte escolhe com o botão)</SelectItem>
+                          <SelectItem value="dark">Sempre Escuro (Esconde o botão)</SelectItem>
+                          <SelectItem value="light">Sempre Claro (Esconde o botão)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Modo Claro */}
                     <div className="space-y-4">
@@ -1393,24 +1616,62 @@ export default function AdminDashboard() {
                     )}
                   </div>
 
-                  {/* Estilo de Layout Hero */}
-                  <div className="pt-6 border-t border-white/5 space-y-2">
+                  {/* Estilos Avançados do Hero */}
+                  <div className="pt-6 border-t border-white/5 space-y-4">
                     <Label className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
-                      Estilo de Layout Hero
+                      Estilos Avançados do Topo (Hero)
                     </Label>
-                    <Select 
-                      value={localConfig?.heroLayout || 'classic'} 
-                      onValueChange={(val) => setLocalConfig({...localConfig, heroLayout: val})}
-                    >
-                      <SelectTrigger className="bg-background/50 border-white/10">
-                        <SelectValue placeholder="Selecione o Layout" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="classic">Layout Clássico (Logo centralizada)</SelectItem>
-                        <SelectItem value="split">Split Layout (Logo à esquerda, slogan à direita)</SelectItem>
-                        <SelectItem value="clean">Layout Limpo (Apenas tocador e visualizador em destaque)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Estilo de Layout Base</Label>
+                        <Select 
+                          value={localConfig?.heroLayout || 'classic'} 
+                          onValueChange={(val) => setLocalConfig({...localConfig, heroLayout: val})}
+                        >
+                          <SelectTrigger className="bg-background/50 border-white/10">
+                            <SelectValue placeholder="Selecione o Layout" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="classic">Layout Clássico (Centralizado)</SelectItem>
+                            <SelectItem value="split">Split Layout (Texto Lateral)</SelectItem>
+                            <SelectItem value="clean">Layout Limpo</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label className="text-xs">Animação de Fundo</Label>
+                        <Select 
+                          value={localConfig?.heroAnimation || 'none'} 
+                          onValueChange={(val) => setLocalConfig({...localConfig, heroAnimation: val})}
+                        >
+                          <SelectTrigger className="bg-background/50 border-white/10">
+                            <SelectValue placeholder="Sem Animação" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Estático (Padrão)</SelectItem>
+                            <SelectItem value="ken-burns">Efeito Ken Burns (Zoom Cinematográfico)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Filtro de Overlay (Camada de Cor)</Label>
+                        <Select 
+                          value={localConfig?.heroOverlayStyle || 'classic'} 
+                          onValueChange={(val) => setLocalConfig({...localConfig, heroOverlayStyle: val})}
+                        >
+                          <SelectTrigger className="bg-background/50 border-white/10">
+                            <SelectValue placeholder="Gradiente Clássico Escuro" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="classic">Gradiente Clássico Escuro</SelectItem>
+                            <SelectItem value="primary-tint">Tonalidade Cor Primária</SelectItem>
+                            <SelectItem value="solid-dark">Escurecimento Sólido Uniforme</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Ajustes de Opacidade Hero */}
@@ -1683,14 +1944,42 @@ export default function AdminDashboard() {
                         <div className="border rounded-xl overflow-hidden border-white/5 bg-background/20">
                           <Table>
                             <TableBody>
-                              {noticesList.map((item, idx) => {
-                                const expired = item.expiresAt ? new Date(item.expiresAt) < new Date() : false;
-                                return (
-                                  <TableRow key={item.id} className={cn("hover:bg-white/5", expired && "opacity-50")}>
-                                    <TableCell className="py-3 pl-4">
-                                      <div className="flex items-center gap-2">
-                                        <DynamicIcon name={item.icon} className="h-4 w-4 text-secondary shrink-0" />
-                                        <div className="min-w-0">
+                                {noticesList.map((item, idx) => {
+                                  const expired = item.expiresAt ? new Date(item.expiresAt) < new Date() : false;
+                                  const isDragging = draggedNoticeIndex === idx;
+                                  return (
+                                    <TableRow 
+                                      key={item.id} 
+                                      draggable
+                                      onDragStart={() => setDraggedNoticeIndex(idx)}
+                                      onDragOver={(e) => {
+                                        e.preventDefault();
+                                        if (draggedNoticeIndex === null || draggedNoticeIndex === idx) return;
+                                        
+                                        const newList = [...noticesList];
+                                        const draggedItem = newList[draggedNoticeIndex];
+                                        newList.splice(draggedNoticeIndex, 1);
+                                        newList.splice(idx, 0, draggedItem);
+                                        
+                                        setNoticesList(newList);
+                                        setDraggedNoticeIndex(idx);
+                                      }}
+                                      onDragEnd={() => {
+                                        setDraggedNoticeIndex(null);
+                                      }}
+                                      className={cn(
+                                        "hover:bg-white/5 cursor-grab active:cursor-grabbing transition-colors", 
+                                        expired && "opacity-50",
+                                        isDragging && "opacity-50 bg-secondary/10"
+                                      )}
+                                    >
+                                      <TableCell className="py-3 pl-4">
+                                        <div className="flex items-center gap-2">
+                                          <div className="text-muted-foreground mr-1">
+                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4"><path d="M5.5 3C5.5 3.27614 5.27614 3.5 5 3.5C4.72386 3.5 4.5 3.27614 4.5 3C4.5 2.72386 4.72386 2.5 5 2.5C5.27614 2.5 5.5 2.72386 5.5 3ZM9.5 3C9.5 3.27614 9.27614 3.5 9 3.5C8.72386 3.5 8.5 3.27614 8.5 3C8.5 2.72386 8.72386 2.5 9 2.5C9.27614 2.5 9.5 2.72386 9.5 3ZM5.5 7.5C5.5 7.77614 5.27614 8 5 8C4.72386 8 4.5 7.77614 4.5 7.5C4.5 7.22386 4.72386 7 5 7C5.27614 7 5.5 7.22386 5.5 7.5ZM9.5 7.5C9.5 7.77614 9.27614 8 9 8C8.72386 8 8.5 7.77614 8.5 7.5C8.5 7.22386 8.72386 7 9 7C9.27614 7 9.5 7.22386 9.5 7.5ZM5.5 12C5.5 12.2761 5.27614 12.5 5 12.5C4.72386 12.5 4.5 12.2761 4.5 12C4.5 11.7239 4.72386 11.5 5 11.5C5.27614 11.5 5.5 11.7239 5.5 12ZM9.5 12C9.5 12.2761 9.27614 12.5 9 12.5C8.72386 12.5 8.5 12.2761 8.5 12C8.5 11.7239 8.72386 11.5 9 11.5C9.27614 11.5 9.5 11.7239 9.5 12Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+                                          </div>
+                                          <DynamicIcon name={item.icon} className="h-4 w-4 text-secondary shrink-0" />
+                                          <div className="min-w-0">
                                           <p className="text-xs font-medium truncate max-w-[200px] md:max-w-md">{item.text}</p>
                                           <div className="flex flex-wrap gap-2 mt-1">
                                             {item.expiresAt && (
@@ -1800,8 +2089,44 @@ export default function AdminDashboard() {
                     <Label className="text-xs">Texto de Descrição</Label>
                     <Textarea value={localConfig.aboutText || ''} onChange={e => setLocalConfig({...localConfig, aboutText: e.target.value})} rows={6} className="bg-background/50 border-white/10" />
                   </div>
+
+                  <div className="pt-6 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">Disposição (Layout)</Label>
+                      <Select 
+                        value={localConfig.aboutLayout || 'right-image'} 
+                        onValueChange={v => setLocalConfig({...localConfig, aboutLayout: v})}
+                      >
+                        <SelectTrigger className="bg-background/50">
+                          <SelectValue placeholder="Selecione o estilo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="right-image">Imagem à Direita (Padrão)</SelectItem>
+                          <SelectItem value="left-image">Imagem à Esquerda</SelectItem>
+                          <SelectItem value="center-no-image">Texto Centralizado (Sem Imagem)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">Estilo de Fundo</Label>
+                      <Select 
+                        value={localConfig.aboutBgStyle || 'transparent'} 
+                        onValueChange={v => setLocalConfig({...localConfig, aboutBgStyle: v})}
+                      >
+                        <SelectTrigger className="bg-background/50">
+                          <SelectValue placeholder="Selecione o fundo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="transparent">Transparente (Padrão)</SelectItem>
+                          <SelectItem value="glass">Glassmorphism (Vidro)</SelectItem>
+                          <SelectItem value="secondary-light">Destaque Suave (Secundária)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+              {renderSpacingControls('about', 'Sobre Nós')}
             </TabsContent>
 
             <TabsContent value="player" className="space-y-6 animate-in fade-in duration-300">
@@ -1887,7 +2212,41 @@ export default function AdminDashboard() {
                   <Switch checked={localConfig.showFooter !== false} onCheckedChange={(val) => setLocalConfig({...localConfig, showFooter: val})} />
                 </CardHeader>
                 <CardContent className="space-y-8">
-                   <div className="space-y-4">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-2">
+                       <Label className="text-xs font-bold text-muted-foreground uppercase">Estilo de Fundo do Rodapé</Label>
+                       <Select 
+                         value={localConfig.footerStyle || 'glass'} 
+                         onValueChange={v => setLocalConfig({...localConfig, footerStyle: v})}
+                       >
+                         <SelectTrigger className="bg-background/50">
+                           <SelectValue placeholder="Selecione o estilo" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="glass">Glassmorphism (Translúcido)</SelectItem>
+                           <SelectItem value="solid">Sólido Escuro (Clássico)</SelectItem>
+                           <SelectItem value="minimal">Minimalista (Sem Fundo)</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                     <div className="space-y-2">
+                       <Label className="text-xs font-bold text-muted-foreground uppercase">Alinhamento do Rodapé</Label>
+                       <Select 
+                         value={localConfig.footerAlign || 'left'} 
+                         onValueChange={v => setLocalConfig({...localConfig, footerAlign: v})}
+                       >
+                         <SelectTrigger className="bg-background/50">
+                           <SelectValue placeholder="Selecione o alinhamento" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="left">Alinhado à Esquerda</SelectItem>
+                           <SelectItem value="center">Centralizado</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+
+                   <div className="pt-6 border-t border-white/5 space-y-4">
                      <div className="flex items-center justify-between gap-4">
                        <Label className="text-sm font-bold">Descrição da Marca</Label>
                        <Switch checked={localConfig.showFooterDescription !== false} onCheckedChange={(val) => setLocalConfig({...localConfig, footerDescription: val})} />
@@ -2025,10 +2384,42 @@ export default function AdminDashboard() {
                          <div className="mt-4 border rounded-lg overflow-hidden border-white/5">
                             <Table>
                               <TableBody>
-                                {usefulLinks.map((link, idx) => (
-                                  <TableRow key={idx}>
-                                    <TableCell className="font-medium text-xs truncate max-w-[150px]">{link.label}</TableCell>
-                                    <TableCell className="text-right">
+                                {usefulLinks.map((link, idx) => {
+                                  const isDragging = draggedLinkIndex === idx;
+                                  return (
+                                    <TableRow 
+                                      key={idx}
+                                      draggable
+                                      onDragStart={() => setDraggedLinkIndex(idx)}
+                                      onDragOver={(e) => {
+                                        e.preventDefault();
+                                        if (draggedLinkIndex === null || draggedLinkIndex === idx) return;
+                                        
+                                        const newList = [...usefulLinks];
+                                        const draggedItem = newList[draggedLinkIndex];
+                                        newList.splice(draggedLinkIndex, 1);
+                                        newList.splice(idx, 0, draggedItem);
+                                        
+                                        setUsefulLinks(newList);
+                                        setDraggedLinkIndex(idx);
+                                      }}
+                                      onDragEnd={() => {
+                                        setDraggedLinkIndex(null);
+                                      }}
+                                      className={cn(
+                                        "cursor-grab active:cursor-grabbing transition-colors",
+                                        isDragging && "opacity-50 bg-secondary/10"
+                                      )}
+                                    >
+                                      <TableCell className="font-medium text-xs truncate max-w-[150px]">
+                                        <div className="flex items-center gap-2">
+                                          <div className="text-muted-foreground">
+                                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4"><path d="M5.5 3C5.5 3.27614 5.27614 3.5 5 3.5C4.72386 3.5 4.5 3.27614 4.5 3C4.5 2.72386 4.72386 2.5 5 2.5C5.27614 2.5 5.5 2.72386 5.5 3ZM9.5 3C9.5 3.27614 9.27614 3.5 9 3.5C8.72386 3.5 8.5 3.27614 8.5 3C8.5 2.72386 8.72386 2.5 9 2.5C9.27614 2.5 9.5 2.72386 9.5 3ZM5.5 7.5C5.5 7.77614 5.27614 8 5 8C4.72386 8 4.5 7.77614 4.5 7.5C4.5 7.22386 4.72386 7 5 7C5.27614 7 5.5 7.22386 5.5 7.5ZM9.5 7.5C9.5 7.77614 9.27614 8 9 8C8.72386 8 8.5 7.77614 8.5 7.5C8.5 7.22386 8.72386 7 9 7C9.27614 7 9.5 7.22386 9.5 7.5ZM5.5 12C5.5 12.2761 5.27614 12.5 5 12.5C4.72386 12.5 4.5 12.2761 4.5 12C4.5 11.7239 4.72386 11.5 5 11.5C5.27614 11.5 5.5 11.7239 5.5 12ZM9.5 12C9.5 12.2761 9.27614 12.5 9 12.5C8.72386 12.5 8.5 12.2761 8.5 12C8.5 11.7239 8.72386 11.5 9 11.5C9.27614 11.5 9.5 11.7239 9.5 12Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+                                          </div>
+                                          {link.label}
+                                        </div>
+                                      </TableCell>
+                                      <TableCell className="text-right">
                                       <div className="flex justify-end gap-1">
                                         <Button 
                                           variant="ghost" 
@@ -2057,7 +2448,7 @@ export default function AdminDashboard() {
                                       </div>
                                     </TableCell>
                                   </TableRow>
-                                ))}
+                                )})}
                               </TableBody>
                             </Table>
                          </div>
@@ -2147,6 +2538,57 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                    </div>
+                 </CardContent>
+               </Card>
+
+               <Card className="border-white/5 bg-card/30 mt-6">
+                 <CardHeader>
+                   <CardTitle className="text-secondary text-lg">Ordem da Página Inicial</CardTitle>
+                 </CardHeader>
+                 <CardContent>
+                   <div className="space-y-2">
+                     {(localConfig.homeModulesOrder || ['about', 'schedule', 'verses']).map((modId: string, idx: number) => {
+                       const moduleLabels: Record<string, string> = { 'about': 'Sobre Nós', 'schedule': 'Programação', 'verses': 'Versículos' };
+                       const isDragging = draggedModuleIndex === idx;
+                        
+                       return (
+                         <div 
+                           key={modId} 
+                           draggable
+                           onDragStart={() => setDraggedModuleIndex(idx)}
+                           onDragOver={(e) => {
+                             e.preventDefault();
+                             if (draggedModuleIndex === null || draggedModuleIndex === idx) return;
+                             
+                             const newOrder = [...(localConfig.homeModulesOrder || ['about', 'schedule', 'verses'])];
+                             const draggedItem = newOrder[draggedModuleIndex];
+                             newOrder.splice(draggedModuleIndex, 1);
+                             newOrder.splice(idx, 0, draggedItem);
+                             
+                             setLocalConfig({...localConfig, homeModulesOrder: newOrder});
+                             setDraggedModuleIndex(idx);
+                           }}
+                           onDragEnd={() => setDraggedModuleIndex(null)}
+                           className={cn(
+                             "flex items-center justify-between p-3 bg-background/40 border border-white/5 rounded-xl cursor-grab active:cursor-grabbing transition-colors",
+                             isDragging ? "opacity-50 bg-secondary/10 border-secondary/50" : "hover:border-white/10"
+                           )}
+                         >
+                           <div className="flex items-center gap-3">
+                             <div className="text-muted-foreground">
+                               <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4"><path d="M5.5 3C5.5 3.27614 5.27614 3.5 5 3.5C4.72386 3.5 4.5 3.27614 4.5 3C4.5 2.72386 4.72386 2.5 5 2.5C5.27614 2.5 5.5 2.72386 5.5 3ZM9.5 3C9.5 3.27614 9.27614 3.5 9 3.5C8.72386 3.5 8.5 3.27614 8.5 3C8.5 2.72386 8.72386 2.5 9 2.5C9.27614 2.5 9.5 2.72386 9.5 3ZM5.5 7.5C5.5 7.77614 5.27614 8 5 8C4.72386 8 4.5 7.77614 4.5 7.5C4.5 7.22386 4.72386 7 5 7C5.27614 7 5.5 7.22386 5.5 7.5ZM9.5 7.5C9.5 7.77614 9.27614 8 9 8C8.72386 8 8.5 7.77614 8.5 7.5C8.5 7.22386 8.72386 7 9 7C9.27614 7 9.5 7.22386 9.5 7.5ZM5.5 12C5.5 12.2761 5.27614 12.5 5 12.5C4.72386 12.5 4.5 12.2761 4.5 12C4.5 11.7239 4.72386 11.5 5 11.5C5.27614 11.5 5.5 11.7239 5.5 12ZM9.5 12C9.5 12.2761 9.27614 12.5 9 12.5C8.72386 12.5 8.5 12.2761 8.5 12C8.5 11.7239 8.72386 11.5 9 11.5C9.27614 11.5 9.5 11.7239 9.5 12Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+                             </div>
+                             <Label className="text-xs font-medium cursor-grab">{moduleLabels[modId] || modId}</Label>
+                           </div>
+                           <div className="flex gap-1 pointer-events-none">
+                             <Button variant="ghost" size="icon" disabled={idx === 0} className="h-8 w-8 text-secondary/50"><ArrowUp className="h-4 w-4" /></Button>
+                             <Button variant="ghost" size="icon" disabled={idx === (localConfig.homeModulesOrder || ['about', 'schedule', 'verses']).length - 1} className="h-8 w-8 text-secondary/50"><ArrowDown className="h-4 w-4" /></Button>
+                           </div>
+                         </div>
+                       );
+                     })}
+                   </div>
+                   <p className="text-[10px] text-muted-foreground mt-4">A ordem acima define como os blocos serão organizados visualmente na página principal.</p>
                  </CardContent>
                </Card>
             </TabsContent>

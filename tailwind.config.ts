@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['Playfair Display', 'serif'],
+        body: ['var(--font-body, "PT Sans")', 'sans-serif'],
+        headline: ['var(--font-headline, "Playfair Display")', 'serif'],
         code: ['monospace'],
       },
       colors: {
@@ -89,10 +89,15 @@ export default {
             height: '0',
           },
         },
+        'ken-burns': {
+          '0%': { transform: 'scale(1.0)' },
+          '100%': { transform: 'scale(1.15)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'ken-burns': 'ken-burns 30s ease-in-out infinite alternate',
       },
     },
   },

@@ -117,7 +117,29 @@ export default async function Home() {
     usefulLinks: config?.usefulLinks || [],
     useDynamicMetadata: config?.useDynamicMetadata === true,
     metadataUrl: config?.metadataUrl || '',
-    nowPlayingText: config?.nowPlayingText || 'Sintonizando Rádio Maranata...'
+    nowPlayingText: config?.nowPlayingText || 'Sintonizando Rádio Maranata...',
+    themeEnforcement: config?.themeEnforcement || 'free',
+    programLayout: config?.programLayout || 'grid',
+    heroAnimation: config?.heroAnimation || 'scale',
+    heroOverlayStyle: config?.heroOverlayStyle || 'gradient',
+    homeModulesOrder: config?.homeModulesOrder || ['about', 'schedule', 'verses'],
+    aboutLayout: config?.aboutLayout || 'default',
+    aboutBgStyle: config?.aboutBgStyle || 'transparent',
+    footerStyle: config?.footerStyle || 'default',
+    footerAlign: config?.footerAlign || 'center',
+    sectionSpacing: config?.sectionSpacing || 'normal',
+    aboutMarginTopMobile: config?.aboutMarginTopMobile || '',
+    aboutMarginBottomMobile: config?.aboutMarginBottomMobile || '',
+    aboutMarginTopDesktop: config?.aboutMarginTopDesktop || '',
+    aboutMarginBottomDesktop: config?.aboutMarginBottomDesktop || '',
+    scheduleMarginTopMobile: config?.scheduleMarginTopMobile || '',
+    scheduleMarginBottomMobile: config?.scheduleMarginBottomMobile || '',
+    scheduleMarginTopDesktop: config?.scheduleMarginTopDesktop || '',
+    scheduleMarginBottomDesktop: config?.scheduleMarginBottomDesktop || '',
+    versesMarginTopMobile: config?.versesMarginTopMobile || '',
+    versesMarginBottomMobile: config?.versesMarginBottomMobile || '',
+    versesMarginTopDesktop: config?.versesMarginTopDesktop || '',
+    versesMarginBottomDesktop: config?.versesMarginBottomDesktop || ''
   };
 
   const worshipImg = PlaceHolderImages.find(img => img.id === 'gospel-worship');
@@ -158,6 +180,44 @@ export default async function Home() {
   const showYt = siteConfig.showYoutube !== false && youtubeUrl;
   const hasSocialLinks = siteConfig.showSocial && (showInsta || showFb || showYt);
   const usefulLinks = siteConfig.usefulLinks || [];
+
+  const getModuleSpacing = (modId: string) => {
+    let defaultMt = 'mt-20 md:mt-32';
+    let defaultMb = 'mb-20 md:mb-32';
+    if (siteConfig.sectionSpacing === 'compact') {
+      defaultMt = 'mt-10 md:mt-16';
+      defaultMb = 'mb-10 md:mb-16';
+    } else if (siteConfig.sectionSpacing === 'relaxed') {
+      defaultMt = 'mt-32 md:mt-48';
+      defaultMb = 'mb-32 md:mb-48';
+    }
+
+    if (modId === 'about') {
+      return cn(
+        siteConfig.aboutMarginTopMobile || defaultMt.split(' ')[0],
+        siteConfig.aboutMarginTopDesktop || defaultMt.split(' ')[1],
+        siteConfig.aboutMarginBottomMobile || defaultMb.split(' ')[0],
+        siteConfig.aboutMarginBottomDesktop || defaultMb.split(' ')[1]
+      );
+    }
+    if (modId === 'schedule') {
+      return cn(
+        siteConfig.scheduleMarginTopMobile || defaultMt.split(' ')[0],
+        siteConfig.scheduleMarginTopDesktop || defaultMt.split(' ')[1],
+        siteConfig.scheduleMarginBottomMobile || defaultMb.split(' ')[0],
+        siteConfig.scheduleMarginBottomDesktop || defaultMb.split(' ')[1]
+      );
+    }
+    if (modId === 'verses') {
+      return cn(
+        siteConfig.versesMarginTopMobile || defaultMt.split(' ')[0],
+        siteConfig.versesMarginTopDesktop || defaultMt.split(' ')[1],
+        siteConfig.versesMarginBottomMobile || defaultMb.split(' ')[0],
+        siteConfig.versesMarginBottomDesktop || defaultMb.split(' ')[1]
+      );
+    }
+    return cn(defaultMt, defaultMb);
+  };
 
   const rawAppName = siteConfig.appName || 'Rádio Maranata';
   const nameParts = rawAppName.split(' ');
@@ -209,7 +269,7 @@ export default async function Home() {
       {/* Container Principal */}
       <div className="relative flex flex-col flex-1 w-full">
         {/* Seletor de Tema Dropdown (Client Component) */}
-        <ThemeSwitcher />
+        {siteConfig.themeEnforcement === 'free' && <ThemeSwitcher />}
 
         {/* Hero Section */}
         <section className="relative h-[85vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden">
@@ -220,12 +280,17 @@ export default async function Home() {
                 alt="Hero Background"
                 fill
                 style={{ opacity: siteConfig.heroBgOpacity }}
-                className="object-cover scale-105"
+                className={cn("object-cover", siteConfig.heroAnimation === 'ken-burns' ? 'animate-ken-burns' : 'scale-105')}
                 priority
               />
               <div 
                 style={{ opacity: siteConfig.heroOverlayOpacity }}
-                className="absolute inset-0 bg-gradient-to-b from-background via-background/60 to-background" 
+                className={cn(
+                  "absolute inset-0",
+                  siteConfig.heroOverlayStyle === 'primary-tint' ? 'bg-primary/40 backdrop-blur-[2px]' :
+                  siteConfig.heroOverlayStyle === 'solid-dark' ? 'bg-black/80' :
+                  'bg-gradient-to-b from-background via-background/60 to-background'
+                )} 
               />
             </div>
           )}
@@ -361,158 +426,187 @@ export default async function Home() {
         </section>
 
         {(siteConfig.showAbout || (siteConfig.showProgramacao && programs && programs.length > 0) || siteConfig.showVersiculo) && (
-          <div className="max-w-7xl mx-auto w-full px-6 space-y-40 mb-32">
-            {/* About Section */}
-            {siteConfig.showAbout && (
-              <section id="sobre" className={cn(
-                "grid gap-20 items-center",
-                showAboutImageVisibility ? "md:grid-cols-2" : "grid-cols-1 max-w-4xl mx-auto text-center"
-              )}>
-                <div className="space-y-8 animate-in slide-in-from-left duration-700">
-                  <div className="space-y-2">
-                    <span className="text-secondary font-bold tracking-widest uppercase text-sm">
-                      {siteConfig.aboutBadge || 'Nossa Identidade'}
-                    </span>
-                    <h2 className="text-5xl font-headline font-bold leading-tight">
-                      {siteConfig.aboutTitle || 'Levando Esperança através das Ondas'}
-                    </h2>
-                  </div>
-                  <p className="text-xl leading-relaxed text-muted-foreground/90 font-light">
-                    {siteConfig.aboutText}
-                  </p>
-                </div>
+          <div className="max-w-7xl mx-auto w-full px-6 flex flex-col">
+            {(siteConfig.homeModulesOrder || ['about', 'schedule', 'verses']).map((modId: string) => {
+              
+              if (modId === 'about' && siteConfig.showAbout) {
+                const isCenter = siteConfig.aboutLayout === 'center-no-image';
+                const isLeft = siteConfig.aboutLayout === 'left-image';
                 
-                {showAboutImageVisibility && (
-                  <div className="relative h-[500px] rounded-3xl overflow-hidden shadow-2xl group animate-in slide-in-from-right duration-700">
-                    <Image 
-                      src={aboutImage}
-                      alt="Estúdio"
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl" />
-                  </div>
-                )}
-              </section>
-            )}
-
-            {/* Schedule Section */}
-            {siteConfig.showProgramacao && programs && programs.length > 0 && (
-              <section id="programacao" className="space-y-16">
-                <div className="text-center space-y-4">
-                  <h2 className="text-5xl font-headline font-bold text-secondary">Programação Diária</h2>
-                  <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Momentos de edificação, louvor e palavra reservados para você sintonizar a sua fé.</p>
-                </div>
-                
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {programs.map((prog, idx) => {
-                    const isLive = prog.id === activeProgramId;
+                return (
+                  <section key="about" id="sobre" className={cn(
+                    "grid items-center transition-all duration-500",
+                    getModuleSpacing('about'),
+                    isCenter ? "grid-cols-1 max-w-4xl mx-auto text-center gap-12" : "grid-cols-1 md:grid-cols-2 gap-20",
+                    siteConfig.aboutBgStyle === 'glass' ? "teal-glass p-8 md:p-16 rounded-[3rem]" : "",
+                    siteConfig.aboutBgStyle === 'secondary-light' ? "bg-secondary/5 border border-secondary/10 p-8 md:p-16 rounded-[3rem]" : ""
+                  )}>
+                    <div className={cn("space-y-8 animate-in slide-in-from-left duration-700", isLeft && !isCenter ? "md:order-2" : "")}>
+                      <div className="space-y-2">
+                        <span className="text-secondary font-bold tracking-widest uppercase text-sm">
+                          {siteConfig.aboutBadge || 'Nossa Identidade'}
+                        </span>
+                        <h2 className="text-5xl font-headline font-bold leading-tight">
+                          {siteConfig.aboutTitle || 'Levando Esperança através das Ondas'}
+                        </h2>
+                      </div>
+                      <p className="text-xl leading-relaxed text-muted-foreground/90 font-light">
+                        {siteConfig.aboutText}
+                      </p>
+                    </div>
                     
-                    let cardClasses = "";
-                    let customStyles: React.CSSProperties = {};
+                    {showAboutImageVisibility && !isCenter && (
+                      <div className={cn("relative h-[500px] rounded-3xl overflow-hidden shadow-2xl group animate-in slide-in-from-right duration-700", isLeft && !isCenter ? "md:order-1" : "")}>
+                        <Image 
+                          src={aboutImage}
+                          alt="Estúdio"
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl" />
+                      </div>
+                    )}
+                  </section>
+                );
+              }
 
-                    if (isLive) {
-                      cardClasses = "border-secondary/50 bg-secondary/5 ring-1 ring-secondary/20";
-                    } else {
-                      if (siteConfig.programStyle === 'glass') {
-                        cardClasses = `teal-glass hover:border-secondary/50 ${siteConfig.programBorderWidth}`;
-                        if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
-                      } else if (siteConfig.programStyle === 'solid') {
-                        cardClasses = `bg-card/90 hover:border-secondary/50 ${siteConfig.programBorderWidth}`;
-                        if (siteConfig.programBgColor) {
-                          customStyles = { ...customStyles, backgroundColor: siteConfig.programBgColor };
-                          if (siteConfig.programBgOpacity !== undefined) {
-                            // Opacity logic for solid color
+              if (modId === 'schedule' && siteConfig.showProgramacao && programs && programs.length > 0) {
+                return (
+                  <section key="schedule" id="programacao" className={cn("space-y-16", getModuleSpacing('schedule'))}>
+                    <div className="text-center space-y-4">
+                      <h2 className="text-5xl font-headline font-bold text-secondary">Programação Diária</h2>
+                      <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Momentos de edificação, louvor e palavra reservados para você sintonizar a sua fé.</p>
+                    </div>
+                    
+                    <div className={cn(
+                      "gap-8 pb-4 hide-scrollbar",
+                      siteConfig.programLayout === 'carousel' 
+                        ? "flex overflow-x-auto snap-x snap-mandatory px-4 md:px-0" 
+                        : "grid sm:grid-cols-2 lg:grid-cols-4"
+                    )}>
+                      {programs.map((prog, idx) => {
+                        const isLive = prog.id === activeProgramId;
+                        
+                        let cardClasses = "";
+                        let customStyles: React.CSSProperties = {};
+
+                        if (isLive) {
+                          cardClasses = "border-secondary/50 bg-secondary/5 ring-1 ring-secondary/20";
+                        } else {
+                          if (siteConfig.programStyle === 'glass') {
+                            cardClasses = `teal-glass hover:border-secondary/50 ${siteConfig.programBorderWidth}`;
+                            if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
+                          } else if (siteConfig.programStyle === 'solid') {
+                            cardClasses = `bg-card/90 hover:border-secondary/50 ${siteConfig.programBorderWidth}`;
+                            if (siteConfig.programBgColor) {
+                              customStyles = { ...customStyles, backgroundColor: siteConfig.programBgColor };
+                            }
+                            if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
+                          } else if (siteConfig.programStyle === 'neon') {
+                            cardClasses = `bg-background/80 hover:shadow-[0_0_20px_rgba(var(--secondary),0.4)] ${siteConfig.programBorderWidth}`;
+                            if (siteConfig.programBorderColor) {
+                              customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
+                            } else {
+                              cardClasses += ' border-secondary';
+                            }
+                          } else if (siteConfig.programStyle === 'minimal') {
+                            cardClasses = `bg-transparent hover:bg-secondary/5 border-b ${siteConfig.programBorderWidth === 'border-0' ? 'border-b-0' : ''}`;
+                            if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
                           }
                         }
-                        if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
-                      } else if (siteConfig.programStyle === 'neon') {
-                        cardClasses = `bg-background/80 hover:shadow-[0_0_20px_rgba(var(--secondary),0.4)] ${siteConfig.programBorderWidth}`;
-                        if (siteConfig.programBorderColor) {
-                          customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
-                        } else {
-                          cardClasses += ' border-secondary';
-                        }
-                      } else if (siteConfig.programStyle === 'minimal') {
-                        cardClasses = `bg-transparent hover:bg-secondary/5 border-b ${siteConfig.programBorderWidth === 'border-0' ? 'border-b-0' : ''}`;
-                        if (siteConfig.programBorderColor) customStyles = { ...customStyles, borderColor: siteConfig.programBorderColor };
-                      }
-                    }
 
-                    return (
-                      <Card key={prog.id} className={cn(
-                        "transition-all duration-500 group animate-in fade-in slide-in-from-bottom-4 relative overflow-hidden",
-                        siteConfig.programRadius,
-                        cardClasses
-                      )} style={{ animationDelay: `${idx * 100}ms`, ...customStyles }}>
-                        {isLive && (
-                          <div className="absolute top-0 right-0 p-4 z-10 flex items-center gap-1.5">
-                            <span className="relative flex h-2.5 w-2.5">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary"></span>
-                            </span>
-                            <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">No Ar</span>
-                          </div>
-                        )}
-                        <CardContent className={cn("p-8 space-y-6 relative z-0", siteConfig.programTextAlign)}>
-                          <div className={cn("flex items-center", siteConfig.programTextAlign === 'text-center' ? 'justify-center flex-col gap-4' : siteConfig.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : 'justify-between')}>
-                            <span className={cn(
-                              "text-3xl font-black transition-colors duration-500",
-                              isLive ? "text-secondary" : "text-secondary/30 group-hover:text-secondary"
-                            )}>
-                              {prog.horario}
-                            </span>
-                            <div className={cn(
-                              "p-2 rounded-lg transition-opacity flex-shrink-0",
-                              isLive ? "bg-secondary/20 text-secondary opacity-100" : "bg-secondary/10 text-secondary opacity-0 group-hover:opacity-100"
-                            )}>
-                              <DynamicIcon name={siteConfig.programIcon} className="h-5 w-5" />
-                            </div>
-                          </div>
-                          <div className={cn("space-y-3", siteConfig.programTextAlign === 'text-center' ? 'items-center flex flex-col' : siteConfig.programTextAlign === 'text-right' ? 'items-end flex flex-col' : '')}>
-                            <h3 className={cn("text-2xl font-headline font-bold", isLive && "text-foreground")}>{prog.name}</h3>
-                            <div className={cn("flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider", siteConfig.programTextAlign === 'text-center' ? 'justify-center' : siteConfig.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : '')}>
-                              <User className="h-4 w-4" />
-                              <span>{prog.presenter}</span>
-                            </div>
-                            <p className="text-muted-foreground leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-500">
-                              {prog.description}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
+                        return (
+                          <Card key={prog.id} className={cn(
+                            "transition-all duration-500 group animate-in fade-in slide-in-from-bottom-4 relative overflow-hidden",
+                            siteConfig.programRadius,
+                            cardClasses,
+                            siteConfig.programLayout === 'carousel' && "w-[85vw] sm:w-[350px] shrink-0 snap-center"
+                          )} style={{ animationDelay: `${idx * 100}ms`, ...customStyles }}>
+                            {isLive && (
+                              <div className="absolute top-0 right-0 p-4 z-10 flex items-center gap-1.5">
+                                <span className="relative flex h-2.5 w-2.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-secondary"></span>
+                                </span>
+                                <span className="text-[10px] font-bold text-secondary uppercase tracking-widest">No Ar</span>
+                              </div>
+                            )}
+                            <CardContent className={cn("p-8 space-y-6 relative z-0", siteConfig.programTextAlign)}>
+                              <div className={cn("flex items-center", siteConfig.programTextAlign === 'text-center' ? 'justify-center flex-col gap-4' : siteConfig.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : 'justify-between')}>
+                                <span className={cn(
+                                  "text-3xl font-black transition-colors duration-500",
+                                  isLive ? "text-secondary" : "text-secondary/30 group-hover:text-secondary"
+                                )}>
+                                  {prog.horario}
+                                </span>
+                                <div className={cn(
+                                  "p-2 rounded-lg transition-opacity flex-shrink-0",
+                                  isLive ? "bg-secondary/20 text-secondary opacity-100" : "bg-secondary/10 text-secondary opacity-0 group-hover:opacity-100"
+                                )}>
+                                  <DynamicIcon name={siteConfig.programIcon} className="h-5 w-5" />
+                                </div>
+                              </div>
+                              <div className={cn("space-y-3", siteConfig.programTextAlign === 'text-center' ? 'items-center flex flex-col' : siteConfig.programTextAlign === 'text-right' ? 'items-end flex flex-col' : '')}>
+                                <h3 className={cn("text-2xl font-headline font-bold", isLive && "text-foreground")}>{prog.name}</h3>
+                                <div className={cn("flex items-center gap-2 text-sm text-secondary/80 font-bold uppercase tracking-wider", siteConfig.programTextAlign === 'text-center' ? 'justify-center' : siteConfig.programTextAlign === 'text-right' ? 'justify-end flex-row-reverse' : '')}>
+                                  <User className="h-4 w-4" />
+                                  <span>{prog.presenter}</span>
+                                </div>
+                                <p className="text-muted-foreground leading-relaxed line-clamp-3 group-hover:line-clamp-none transition-all duration-500">
+                                  {prog.description}
+                                </p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              }
 
-            {/* Verse of the day (Client Component) */}
-            <DynamicVerse 
-              showVersiculo={siteConfig.showVersiculo}
-              verseInterval={siteConfig.verseInterval}
-              versesList={siteConfig.versesList}
-              verseText={siteConfig.verseText}
-              verseBoxPadding={siteConfig.verseBoxPadding}
-              verseBoxRadius={siteConfig.verseBoxRadius}
-              verseBoxWidth={siteConfig.verseBoxWidth}
-              verseBorderWidth={siteConfig.verseBorderWidth}
-              verseBorderColor={siteConfig.verseBorderColor}
-              verseBgColor={siteConfig.verseBgColor}
-              verseBgOpacity={siteConfig.verseBgOpacity}
-              verseAlign={siteConfig.verseAlign}
-              verseIcon={siteConfig.verseIcon}
-              verseFontSize={siteConfig.verseFontSize}
-              verseFontFamily={siteConfig.verseFontFamily}
-              verseTextColor={siteConfig.verseTextColor}
-            />
+              if (modId === 'verses') {
+                return (
+                  <div key="verses" className={cn("w-full", getModuleSpacing('verses'))}>
+                    <DynamicVerse 
+                      showVersiculo={siteConfig.showVersiculo}
+                      verseInterval={siteConfig.verseInterval}
+                      versesList={siteConfig.versesList}
+                      verseText={siteConfig.verseText}
+                      verseBoxPadding={siteConfig.verseBoxPadding}
+                      verseBoxRadius={siteConfig.verseBoxRadius}
+                      verseBoxWidth={siteConfig.verseBoxWidth}
+                      verseBorderWidth={siteConfig.verseBorderWidth}
+                      verseBorderColor={siteConfig.verseBorderColor}
+                      verseBgColor={siteConfig.verseBgColor}
+                      verseBgOpacity={siteConfig.verseBgOpacity}
+                      verseAlign={siteConfig.verseAlign}
+                      verseIcon={siteConfig.verseIcon}
+                      verseFontSize={siteConfig.verseFontSize}
+                      verseFontFamily={siteConfig.verseFontFamily}
+                      verseTextColor={siteConfig.verseTextColor}
+                    />
+                  </div>
+                );
+              }
+
+              return null;
+            })}
           </div>
         )}
 
         {/* Footer */}
         {siteConfig.showFooter !== false && (
-          <footer className="border-t border-border bg-card/30 pt-24 pb-40 px-6 backdrop-blur-xl">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
+          <footer className={cn(
+            "border-t border-border pt-24 pb-40 px-6",
+            siteConfig.footerStyle === 'solid' ? 'bg-card' : 
+            siteConfig.footerStyle === 'minimal' ? 'bg-transparent border-t-0' :
+            'bg-card/30 backdrop-blur-xl'
+          )}>
+            <div className={cn(
+              "max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16",
+              siteConfig.footerAlign === 'center' ? 'text-center place-items-center' : ''
+            )}>
               {siteConfig.showFooterDescription !== false && (
                 <div className="space-y-8">
                   <div className="flex items-center gap-3 text-3xl font-headline font-bold text-secondary">
@@ -528,16 +622,17 @@ export default async function Home() {
               )}
               
               {siteConfig.showUsefulLinks && (
-                <div className="space-y-8">
-                  <h4 className="text-xl font-headline font-bold flex items-center gap-2">
-                    <div className="w-8 h-[2px] bg-secondary" />
+                <div className={cn("space-y-8", siteConfig.footerAlign === 'center' ? 'flex flex-col items-center' : '')}>
+                  <h4 className={cn("text-xl font-headline font-bold flex items-center gap-2", siteConfig.footerAlign === 'center' ? 'justify-center' : '')}>
+                    {siteConfig.footerAlign !== 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                     Links Úteis
+                    {siteConfig.footerAlign === 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                   </h4>
-                  <ul className="grid grid-cols-1 gap-4 text-muted-foreground text-base">
+                  <ul className={cn("grid grid-cols-1 gap-4 text-muted-foreground text-base", siteConfig.footerAlign === 'center' ? 'text-center' : '')}>
                     {usefulLinks.map((link: { url: string; label: string }, i: number) => (
                       <li key={i}>
                         <a href={link.url} className="hover:text-secondary hover:translate-x-2 transition-all inline-flex items-center gap-2 group">
-                          <ChevronRight className="h-4 w-4 text-secondary/50 group-hover:text-secondary" />
+                          {siteConfig.footerAlign !== 'center' && <ChevronRight className="h-4 w-4 text-secondary/50 group-hover:text-secondary" />}
                           {link.label}
                         </a>
                       </li>
@@ -547,10 +642,11 @@ export default async function Home() {
               )}
 
               {hasSocialLinks && (
-                <div className="space-y-8">
-                  <h4 className="text-xl font-headline font-bold flex items-center gap-2">
-                    <div className="w-8 h-[2px] bg-secondary" />
+                <div className={cn("space-y-8", siteConfig.footerAlign === 'center' ? 'flex flex-col items-center' : '')}>
+                  <h4 className={cn("text-xl font-headline font-bold flex items-center gap-2", siteConfig.footerAlign === 'center' ? 'justify-center' : '')}>
+                    {siteConfig.footerAlign !== 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                     Conecte-se
+                    {siteConfig.footerAlign === 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                   </h4>
                   <div className="flex gap-4">
                     {showInsta && (
@@ -573,7 +669,11 @@ export default async function Home() {
               )}
             </div>
             
-            <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground font-light">
+            <div className={cn(
+              "max-w-7xl mx-auto mt-24 pt-8 border-t flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground font-light",
+              siteConfig.footerStyle === 'minimal' ? 'border-t-0 opacity-70' : 'border-border',
+              siteConfig.footerAlign === 'center' ? 'text-center' : 'md:flex-row'
+            )}>
               <p>{siteConfig.copyrightText}</p>
               <div className="flex items-center gap-2">
                 <DynamicIcon name={siteConfig.footerStatusIcon || 'Radio'} className="h-4 w-4 text-secondary" />
