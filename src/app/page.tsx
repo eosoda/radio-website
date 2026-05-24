@@ -628,9 +628,7 @@ export default async function Home() {
               {siteConfig.showUsefulLinks && (
                 <div className={cn("space-y-8", siteConfig.footerAlign === 'center' ? 'flex flex-col items-center' : '')}>
                   <h4 className={cn("text-xl font-headline font-bold flex items-center gap-2", siteConfig.footerAlign === 'center' ? 'justify-center' : '')}>
-                    {siteConfig.footerAlign !== 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                     Links Úteis
-                    {siteConfig.footerAlign === 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                   </h4>
                   <ul className={cn("grid grid-cols-1 gap-4 text-muted-foreground text-base", siteConfig.footerAlign === 'center' ? 'text-center' : '')}>
                     {usefulLinks.map((link: { url: string; label: string }, i: number) => (
@@ -648,9 +646,7 @@ export default async function Home() {
               {hasSocialLinks && (
                 <div className={cn("space-y-8", siteConfig.footerAlign === 'center' ? 'flex flex-col items-center' : '')}>
                   <h4 className={cn("text-xl font-headline font-bold flex items-center gap-2", siteConfig.footerAlign === 'center' ? 'justify-center' : '')}>
-                    {siteConfig.footerAlign !== 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                     Conecte-se
-                    {siteConfig.footerAlign === 'center' && <div className="w-8 h-[2px] bg-secondary" />}
                   </h4>
                   <div className="flex gap-4">
                     {showInsta && (
