@@ -63,6 +63,7 @@ export default function AudioPlayer() {
   const appName = config?.appName || 'Rádio Maranata';
   const defaultVolume = config?.defaultVolume !== undefined ? config.defaultVolume : 0.6;
   const autoplayEnabled = config?.autoplay !== false;
+  const playerLayout = config?.playerLayout || 'hidden-to-pill';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -143,17 +144,49 @@ export default function AudioPlayer() {
 
   if (!isMounted) return null;
 
+  const getContainerClasses = () => {
+    const baseFixed = "fixed z-50 transition-all duration-500";
+    const pillPos = "left-1/2 -translate-x-1/2 bottom-6 opacity-100 scale-100";
+    const barPos = "left-0 right-0 bottom-0 opacity-100 scale-100";
+    const hiddenPos = "left-1/2 -translate-x-1/2 -bottom-32 opacity-0 scale-90 pointer-events-none";
+
+    switch(playerLayout) {
+      case 'bar-to-pill':
+        return cn(baseFixed, isScrolled ? pillPos : barPos);
+      case 'always-pill':
+        return cn(baseFixed, pillPos);
+      case 'always-bar':
+        return cn(baseFixed, barPos);
+      case 'hidden-to-pill':
+      default:
+        return cn(baseFixed, isScrolled ? pillPos : hiddenPos);
+    }
+  };
+
+  const getInnerClasses = () => {
+    const base = "teal-glass px-4 flex items-center transition-all duration-500 mx-auto";
+    const pillShape = "w-[95vw] max-w-[600px] h-[72px] md:h-20 rounded-[2.5rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] ring-1 ring-white/10";
+    const barShape = "w-full max-w-none h-20 md:h-24 rounded-none shadow-2xl border-t border-white/10";
+
+    switch(playerLayout) {
+      case 'bar-to-pill':
+        return cn(base, isScrolled ? pillShape : barShape);
+      case 'always-pill':
+        return cn(base, pillShape);
+      case 'always-bar':
+        return cn(base, barShape);
+      case 'hidden-to-pill':
+      default:
+        return cn(base, pillShape);
+    }
+  };
+
   return (
     <div 
-      className={cn(
-        "fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500",
-        isScrolled 
-          ? "bottom-6 opacity-100 scale-100" 
-          : "-bottom-32 opacity-0 scale-90 pointer-events-none"
-      )}
+      className={getContainerClasses()}
       style={{ transitionTimingFunction: 'cubic-bezier(0.34,1.56,0.64,1)' }}
     >
-      <div className="w-[95vw] max-w-[600px] h-[72px] md:h-20 rounded-[2.5rem] teal-glass px-4 flex items-center shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)] ring-1 ring-white/10 mx-auto">
+      <div className={getInnerClasses()}>
       <audio 
         ref={audioRef} 
         src={streamUrl} 

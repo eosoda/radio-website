@@ -221,6 +221,7 @@ export default function AdminDashboard() {
         heroBadge2Icon: 'Music',
         streamUrl: 'https://URL:PORT/stream/',
         autoplay: true,
+        playerLayout: 'hidden-to-pill',
         metadataUrl: 'https://URL:PORT/currentsong',
         useDynamicMetadata: true,
         defaultVolume: 0.6,
@@ -666,8 +667,8 @@ export default function AdminDashboard() {
               <TabsTrigger value="about" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <BookOpen className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Sobre</span>
               </TabsTrigger>
-              <TabsTrigger value="stream" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                 <Waves className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Stream</span>
+              <TabsTrigger value="player" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                 <RadioIcon className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Player</span>
               </TabsTrigger>
               <TabsTrigger value="schedule" className="flex-1 md:flex-none gap-2 px-4 py-2 text-xs md:text-sm data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                  <ListMusic className="h-3 w-3 md:h-4 md:w-4" /> <span className="hidden sm:inline">Grade</span>
@@ -1803,15 +1804,34 @@ export default function AdminDashboard() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="stream" className="space-y-6 animate-in fade-in duration-300">
+            <TabsContent value="player" className="space-y-6 animate-in fade-in duration-300">
               <Card className="border-white/5 bg-card/30">
                 <CardHeader>
-                  <CardTitle className="text-secondary text-lg">Transmissão</CardTitle>
+                  <CardTitle className="text-secondary text-lg">Configurações do Player</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
                     <Label className="text-xs">URL do Áudio (Stream)</Label>
                     <input value={localConfig.streamUrl || ''} onChange={e => setLocalConfig({...localConfig, streamUrl: e.target.value})} className="flex h-10 w-full rounded-md border border-white/10 bg-background/50 px-3 py-2 text-sm" />
+                  </div>
+
+                  <div className="pt-6 border-t border-white/5 space-y-4">
+                    <Label className="text-sm font-bold">Layout Visual do Player</Label>
+                    <Select 
+                      value={localConfig.playerLayout || 'hidden-to-pill'} 
+                      onValueChange={v => setLocalConfig({...localConfig, playerLayout: v})}
+                    >
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Selecione o estilo do player" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hidden-to-pill">Oculto → Ilha Dinâmica (Atual)</SelectItem>
+                        <SelectItem value="bar-to-pill">Barra Completa → Ilha Dinâmica</SelectItem>
+                        <SelectItem value="always-pill">Sempre Ilha Dinâmica Flutuante</SelectItem>
+                        <SelectItem value="always-bar">Sempre Barra Clássica (Fixa)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground mt-1">Define o comportamento do player na base da tela quando o usuário rola a página.</p>
                   </div>
 
                   <div className="pt-6 border-t border-white/5 space-y-4">
